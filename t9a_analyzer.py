@@ -83,44 +83,8 @@ def missile(att,aim,_str,ap,pt,test=False):
     if test==False:
         return l2
 
-# todo: multiple wound, auto hits
-# treat breath as an additional modelpart with auto hits
-def single_melee(att,off,_str,ap,pt,lr=False,autohits=0,mw=1,test=False):
-    if test==True:
-        l1=[["def","res","arm","dmg","norm"]]
-    l2=[]
-    for _def in range(2,8):
-        for res in range(2,7):
-            for arm in range(0,7):
-                if lr==False:
-                    dmg=att*mw*avgdmg_me(off,_str,ap,_def,res,arm)+avgdmg_autohits(autohits, _str, ap, _def, res, arm)
-                else:
-                    dmg=att*mw*avgdmg_me_lr(off,_str,ap,_def,res,arm)+avgdmg_autohits(autohits, _str, ap, _def, res, arm)
-                dmgpt=avgdmgpt(100*dmg,pt)
-                if test==True:
-                    l1.append([_def,res,arm,round(dmg,1),round(dmgpt,1)])
-                l2.append([_def,res,arm,round(dmg,1),round(dmgpt,1)])
-            if test==True:
-                l1.append(['','','','',''])
-        if test==True:
-            pass #l1.append(2*['','','','',''])
-    if test==True:
-        ltest=c.copy([6*l1[0]])
-        for i in range(40):
-            # ltest.append(l1[0+1]+l1[35+1]+...)
-            # ltest.append(l1[1+1]+l1[36+1]+...)
-            #...
-            # ltest.append(l1[34+1]+l1[69+1]...)
-            ltemp=[]
-            for j in range(6):
-                ltemp+=c.copy(l1[i+40*j+1])
-            ltest.append(ltemp)
-        for row in ltest:
-            print("{: >7} {: >3} {: >3} {: >5} {: >5} {: >7} {: >3} {: >3} {: >5} {: >5}{: >7} {: >3} {: >3} {: >5} {: >5}{: >7} {: >3} {: >3} {: >5} {: >5}{: >7} {: >3} {: >3} {: >5} {: >5}{: >7} {: >3} {: >3} {: >5} {: >5}".format(*row))
-    if test==False:
-        return l2
-
-def multi_melee(att,off,_str,ap,pt,lr,autohits,mw,test=False):
+# treat breath as an additional modelpart with 0 attack and auto hits
+def melee(att,off,_str,ap,pt,mw,autohits,lr,test=False):
     if test==True:
         l1=[["def","res","arm","dmg","norm"]]
     l2=[]
@@ -129,11 +93,17 @@ def multi_melee(att,off,_str,ap,pt,lr,autohits,mw,test=False):
             for arm in range(0,7):
                 dmg=0
                 dmgpt=0
-                for i in range(len(att)):
-                    if lr[i]==False:
-                        dmg+=att[i]*mw[i]*avgdmg_me(off[i],_str[i],ap[i],_def,res,arm)+avgdmg_autohits(autohits[i], _str[i], ap[i], _def, res, arm)
+                if type(att)==list:
+                    for i in range(len(att)):
+                        if lr[i]==False:
+                            dmg+=att[i]*mw[i]*avgdmg_me(off[i],_str[i],ap[i],_def,res,arm)+avgdmg_autohits(autohits[i], _str[i], ap[i], _def, res, arm)
+                        else:
+                            dmg+=att[i]*mw[i]*avgdmg_me_lr(off[i],_str[i],ap[i],_def,res,arm)+avgdmg_autohits(autohits[i], _str[i], ap[i], _def, res, arm)
+                else:
+                    if lr==False:
+                        dmg=att*mw*avgdmg_me(off,_str,ap,_def,res,arm)+avgdmg_autohits(autohits, _str, ap, _def, res, arm)
                     else:
-                        dmg+=att[i]*mw[i]*avgdmg_me_lr(off[i],_str[i],ap[i],_def,res,arm)+avgdmg_autohits(autohits[i], _str[i], ap[i], _def, res, arm)
+                        dmg=att*mw*avgdmg_me_lr(off,_str,ap,_def,res,arm)+avgdmg_autohits(autohits, _str, ap, _def, res, arm)
                 dmgpt+=avgdmgpt(100*dmg,pt)
                 if test==True:
                     l1.append([_def,res,arm,round(dmg,1),round(dmgpt,1)])
@@ -159,12 +129,6 @@ def multi_melee(att,off,_str,ap,pt,lr,autohits,mw,test=False):
             print("{: >7} {: >3} {: >3} {: >5} {: >5} {: >7} {: >3} {: >3} {: >5} {: >5}{: >7} {: >3} {: >3} {: >5} {: >5}{: >7} {: >3} {: >3} {: >5} {: >5}{: >7} {: >3} {: >3} {: >5} {: >5}{: >7} {: >3} {: >3} {: >5} {: >5}".format(*row))
     if test==False:
         return l2
-
-def melee(att,off,_str,ap,pt,lr,autohits,mw,test=False):
-    if type(att)==list:
-        return multi_melee(att, off, _str, ap, pt, lr,autohits,mw,test)
-    else:
-        return single_melee(att, off, _str, ap, pt,lr,autohits,mw,test)
     
 def melee_filter(att,off,_str,ap,pt,lr,autohits,mw,_def=-1,res=-1,arm=-1,test=False):
     l=melee(att,off,_str,ap,pt,lr,autohits,mw)
