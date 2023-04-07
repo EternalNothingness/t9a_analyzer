@@ -6,7 +6,7 @@ Created on Wed Apr  5 13:46:46 2023
 """
 import copy as c
 import numpy as np
-import pathlib as pl
+#import pathlib as pl
 #import pprint as pp
 
 def ptohit(off,_def): # chance to hit with melee weapon
@@ -61,31 +61,67 @@ def n_ptoarm(ap,arm): # chance to fail armour save
     
 avgdmg_me=lambda off,_str,ap,_def,res,arm: ptohit(off,_def)*ptowound(_str,res)*n_ptoarm(ap,arm)
 avgdmg_me_lr=lambda off,_str,ap,_def,res,arm: ptohit_lr(off,_def)*ptowound(_str,res)*n_ptoarm(ap,arm)
-avgdmg_autohits=lambda n,_str,ap,_def,res,arm:n*ptowound(_str, res)*n_ptoarm(ap,arm)
+avgdmg_autohits=lambda n,_str,ap,res,arm:n*ptowound(_str, res)*n_ptoarm(ap,arm)
 avgdmg_mi=lambda aim,_str,ap,res,arm: paim(aim)*ptowound(_str, res)*n_ptoarm(ap, arm)
 avgdmgpt=lambda dmg,pt: dmg/pt
 
-def missile(att,aim,_str,ap,pt,acc=False,qtf=False,unw=False,sta=False,test=False):
+def missile(att,aim,_str,ap,pt,acc=False,qtf=False,unw=False,mof=False,sta=False,rel=False,test=False):
     if test==True:
-        l1=[["res","arm","dmg","norm"]]
+        l1=[["aim","res","arm","dmg","norm"]]
     l2=[]
-    for res in range(2,7):
-        for arm in range(0,7):
-            dmg=att*avgdmg_mi(aim, _str, ap, res, arm)
-            dmgpt=avgdmgpt(100*dmg,pt)
+    aim_orig=aim
+    for sit in range(6):
+        aim=aim_orig
+        # 0 => Short Range, no mod.
+        # Long Range
+        if sit==1 and acc==False:
+            aim+=1
+        # Move and Shoot
+        elif sit==2 and mof==True: # Move or Fire
+            aim=99
+        elif sit==2 and ((qtf==False and unw==False) or (qtf==True and unw==True)): # qick to fire = unwieldy
+            aim+=1
+        elif sit==2 and (qtf==False and unw==True): # unwieldy
+            aim+=2 
+        # Stand and Shoot
+        elif sit==3 and rel==True: # Reload!
+            aim=99
+        elif sit==3 and sta==False:
+            aim+=1
+        # Soft Cover
+        elif sit==4:
+            aim+=1
+        # Hard Cover
+        elif sit==5:
+            aim+=2 
+        for res in range(2,7):
+            for arm in range(0,7):
+                dmg=att*avgdmg_mi(aim, _str, ap, res, arm)
+                dmgpt=avgdmgpt(100*dmg,pt)
+                if test==True:
+                    l1.append([aim,res,arm,round(dmg,1),round(dmgpt,1)])
+                l2.append([aim,res,arm,round(dmg,1),round(dmgpt,1)])
             if test==True:
-                l1.append([res,arm,round(dmg,1),round(dmgpt,1)])
-            l2.append([res,arm,round(dmg,1),round(dmgpt,1)])
-        if test==True:
-            l1.append(['','','','',''])
+                l1.append(['','','','','',''])
     if test==True:
-        for row in l1:
-            print("{: >5} {: >5} {: >5} {: >5}".format(*row))
+        ltest=[['','','Short','Range','']+['','','Long','Range','']+['','Move','and','Shoot','']+['','Stand','and','Shoot','']+['','','Soft','Cover','']+['','','Hard','Cover','']]
+        ltest.append(6*["aim","res","arm","dmg","norm"])
+        for i in range(40):
+            # ltest.append(l1[0+1]+l1[35+1]+...)
+            # ltest.append(l1[1+1]+l1[36+1]+...)
+            #...
+            # ltest.append(l1[34+1]+l1[69+1]...)
+            ltemp=[]
+            for j in range(6):
+                ltemp+=c.copy(l1[i+40*j+1])
+            ltest.append(ltemp)
+        for row in ltest:
+            print("{: >7} {: >5} {: >5} {: >5} {: >5} {: >7} {: >5} {: >5} {: >5} {: >5} {: >7} {: >5} {: >5} {: >5} {: >5} {: >7} {: >5} {: >5} {: >5} {: >5} {: >7} {: >5} {: >5} {: >5} {: >5} {: >7} {: >5} {: >5} {: >5} {: >5}".format(*row))
     if test==False:
         return l2
 
 # treat breath as an additional modelpart with 0 attack and auto hits
-def melee(att,off,_str,ap,pt,mw,autohits,lr,test=False):
+def melee(att,off,_str,ap,pt,mw=1,autohits=0,lr=False,test=False):
     if test==True:
         l1=[["def","res","arm","dmg","norm"]]
     l2=[]
@@ -97,14 +133,14 @@ def melee(att,off,_str,ap,pt,mw,autohits,lr,test=False):
                 if type(att)==list:
                     for i in range(len(att)):
                         if lr[i]==False:
-                            dmg+=att[i]*mw[i]*avgdmg_me(off[i],_str[i],ap[i],_def,res,arm)+avgdmg_autohits(autohits[i], _str[i], ap[i], _def, res, arm)
+                            dmg+=att[i]*mw[i]*avgdmg_me(off[i],_str[i],ap[i],_def,res,arm)+avgdmg_autohits(autohits[i], _str[i], ap[i], res, arm)
                         else:
-                            dmg+=att[i]*mw[i]*avgdmg_me_lr(off[i],_str[i],ap[i],_def,res,arm)+avgdmg_autohits(autohits[i], _str[i], ap[i], _def, res, arm)
+                            dmg+=att[i]*mw[i]*avgdmg_me_lr(off[i],_str[i],ap[i],_def,res,arm)+avgdmg_autohits(autohits[i], _str[i], ap[i], res, arm)
                 else:
                     if lr==False:
-                        dmg=att*mw*avgdmg_me(off,_str,ap,_def,res,arm)+avgdmg_autohits(autohits, _str, ap, _def, res, arm)
+                        dmg=att*mw*avgdmg_me(off,_str,ap,_def,res,arm)+avgdmg_autohits(autohits, _str, ap, res, arm)
                     else:
-                        dmg=att*mw*avgdmg_me_lr(off,_str,ap,_def,res,arm)+avgdmg_autohits(autohits, _str, ap, _def, res, arm)
+                        dmg=att*mw*avgdmg_me_lr(off,_str,ap,_def,res,arm)+avgdmg_autohits(autohits, _str, ap, res, arm)
                 dmgpt+=avgdmgpt(100*dmg,pt)
                 if test==True:
                     l1.append([_def,res,arm,round(dmg,1),round(dmgpt,1)])
@@ -113,8 +149,6 @@ def melee(att,off,_str,ap,pt,mw,autohits,lr,test=False):
                 dmgpt=0
             if test==True:
                 l1.append(['','','','',''])
-        if test==True:
-            pass #l1.append(2*['','','','',''])
     if test==True:
         ltest=c.copy([6*l1[0]])
         for i in range(40):
@@ -127,7 +161,7 @@ def melee(att,off,_str,ap,pt,mw,autohits,lr,test=False):
                 ltemp+=c.copy(l1[i+40*j+1])
             ltest.append(ltemp)
         for row in ltest:
-            print("{: >7} {: >3} {: >3} {: >5} {: >5} {: >7} {: >3} {: >3} {: >5} {: >5}{: >7} {: >3} {: >3} {: >5} {: >5}{: >7} {: >3} {: >3} {: >5} {: >5}{: >7} {: >3} {: >3} {: >5} {: >5}{: >7} {: >3} {: >3} {: >5} {: >5}".format(*row))
+            print("{: >7} {: >3} {: >3} {: >5} {: >5} {: >7} {: >3} {: >3} {: >5} {: >5} {: >7} {: >3} {: >3} {: >5} {: >5} {: >7} {: >3} {: >3} {: >5} {: >5} {: >7} {: >3} {: >3} {: >5} {: >5} {: >7} {: >3} {: >3} {: >5} {: >5}".format(*row))
     if test==False:
         return l2
     
@@ -208,11 +242,11 @@ def wr_he():
     wf("er_mi",missile(5,3,3,0,180))
     # Citizen Archers
     wf("ca_me",melee(10, 4, 3, 0, 150, 1, 0, True))
-    wf("ca_mi",missile(10, 3, 3, 0, 150))
+    wf("ca_mi",missile(10, 3, 3, 0, 150,acc=True))
     # Seaguard
     wf("sg_me_chd",melee(15, 4, 3, 2, 240, 1, 0, True))
     wf("sg_me",melee(15, 4, 3, 1, 240, 1, 0, True))
-    wf("sg_mi",missile(15, 3, 3, 0, 240))
+    wf("sg_mi",missile(15, 3, 3, 0, 240,sta=True))
     
     # Special
     # Sword Masters
@@ -252,5 +286,4 @@ def wr_he():
     wf("iotfh_br",melee([1,4,0], [4,5,0], [3,5,4], [0,2,1], 330, [1,1,1], [0,0,7], [True,False,False]))
     wf("iotfh_st",melee([1,4], [4,5], [3,5], [0,2], 330, [1,1], [0,1], [True,False])) # Large => stomp(1)
     wf("iotfh",melee([1,4], [4,5], [3,5], [0,2], 330, [1,1], [0,0], [True,False]))
-    
-    
+    # Sea Guard Reaper
