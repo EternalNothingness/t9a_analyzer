@@ -253,6 +253,27 @@ def melee_compare(l1,l2,test=False):
         if test==False:
             return lret
         
+def missile_compare(l1,l2,test=False):
+    arra=np.array(l1)[:,3:] # get dmg and norm from l1
+    arrb=np.array(l2)[:,3:] # get dmg and norm from l2
+    arrc=(arra/arrb).copy() # calculates relative dmg/norm
+    arrc=np.concatenate((np.array(l1)[:,:3],arrc),1)
+    lret = arrc.tolist()
+    if test==True:
+        lret = arrc.round(2).tolist()
+        ltest=c.copy([6*["aim","res","arm","dmg","norm"]])
+        for i in range(35):
+            ltemp=[]
+            if i%7 == 0 and i!=0:
+                ltest.append(6*['','','','',''])
+            for j in range(6):
+                ltemp+=c.copy(lret[i+35*j])
+            ltest.append(ltemp)
+        for row in ltest:
+            print("{: >7} {: >5} {: >5} {: >5} {: >5} {: >7} {: >5} {: >5} {: >5} {: >5} {: >7} {: >5} {: >5} {: >5} {: >5} {: >7} {: >5} {: >5} {: >5} {: >5} {: >7} {: >5} {: >5} {: >5} {: >5} {: >7} {: >5} {: >5} {: >5} {: >5}".format(*row))
+    if test==False:
+        return lret
+        
 wf=lambda fname,l: np.savetxt("./data/"+fname+".txt",np.array(l))
 lf=lambda fname: np.loadtxt("./data/"+fname+".txt").tolist()
 
