@@ -6,6 +6,7 @@ Created on Wed Apr  5 13:46:46 2023
 """
 import copy as c
 import numpy as np
+import pathlib as pl
 #import pprint as pp
 
 def ptohit(off,_def): # chance to hit with melee weapon
@@ -20,7 +21,7 @@ def ptohit(off,_def): # chance to hit with melee weapon
     else:
         return 1/6
     
-def ptohit_l(off,_def): # chance to hit with melee weapon with lightning reflexes
+def ptohit_lr(off,_def): # chance to hit with melee weapon with lightning reflexes
     if off-_def>=4:
         return 5/6
     elif off-_def>=1:
@@ -59,12 +60,12 @@ def n_ptoarm(ap,arm): # chance to fail armour save
         return max(1-(arm-ap)/6,1/6)
     
 avgdmg_me=lambda off,_str,ap,_def,res,arm: ptohit(off,_def)*ptowound(_str,res)*n_ptoarm(ap,arm)
-avgdmg_me_lr=lambda off,_str,ap,_def,res,arm: ptohit_l(off,_def)*ptowound(_str,res)*n_ptoarm(ap,arm)
+avgdmg_me_lr=lambda off,_str,ap,_def,res,arm: ptohit_lr(off,_def)*ptowound(_str,res)*n_ptoarm(ap,arm)
 avgdmg_autohits=lambda n,_str,ap,_def,res,arm:n*ptowound(_str, res)*n_ptoarm(ap,arm)
 avgdmg_mi=lambda aim,_str,ap,res,arm: paim(aim)*ptowound(_str, res)*n_ptoarm(ap, arm)
 avgdmgpt=lambda dmg,pt: dmg/pt
 
-def missile(att,aim,_str,ap,pt,test=False):
+def missile(att,aim,_str,ap,pt,acc=False,qtf=False,unw=False,sta=False,test=False):
     if test==True:
         l1=[["res","arm","dmg","norm"]]
     l2=[]
@@ -166,12 +167,12 @@ def melee_filter(att,off,_str,ap,pt,lr,autohits,mw,_def=-1,res=-1,arm=-1,test=Fa
         return lret
     
 def melee_compare(l1,l2,test=False):
-    a1=np.array(l1)[:,3:] # get dmg and norm from l1
-    a2=np.array(l2)[:,3:] # get dmg and norm from l2
-    if (a2>0).all:
-        a3=(a1/a2).round(1).copy() # calculates relative dmg/norm
-        a3=np.concatenate((np.array(l1)[:,:3],a3),1)
-        lret = a3.tolist()
+    arra=np.array(l1)[:,3:] # get dmg and norm from l1
+    arrb=np.array(l2)[:,3:] # get dmg and norm from l2
+    if (arrb>0).all:
+        arrc=(arra/arrb).round(1).copy() # calculates relative dmg/norm
+        arrc=np.concatenate((np.array(l1)[:,:3],arrc),1)
+        lret = arrc.tolist()
         if test==True:
             ltest=c.copy([6*["def","res","arm","dmg","norm"]])
             for i in range(35):
@@ -190,6 +191,66 @@ def melee_compare(l1,l2,test=False):
         if test==False:
             return lret
         
-tofile=lambda fname,l: np.savetxt(fname,np.array(l))
-loadfile=lambda fname: np.loadtxt(fname).tolist()
+wf=lambda fname,l: np.savetxt("./data/"+fname+".txt",np.array(l))
+lf=lambda fname: np.loadtxt("./data/"+fname+".txt").tolist()
+
+def wr_he():
+    # Core
+    # Citizen Spears
+    wf("cs_chd",melee(20, 4, 3, 2, 260, 1, 0, True))
+    wf("cs",melee(20, 4, 3, 1, 260, 1, 0, True))
+    # Highborn Lancers
+    wf("hl_chg",melee([5,5], [4,3], [5,3], [2,0], 210, [1,1], [0,0], [True,False]))
+    wf("hl",melee([5,5], [4,3], [3,3], [0,0], 210, [1,1], [0,0], [True,False]))
+    # Ellein Reavers
+    wf("er_me_chg",melee([5,5], [4,3], [4,3], [1,0], 180, [1,1], [0,0], [True,False]))
+    wf("er_me",melee([5,5], [4,3], [3,3], [0,0], 180, [1,1], [0,0], [True,False]))
+    wf("er_mi",missile(5,3,3,0,180))
+    # Citizen Archers
+    wf("ca_me",melee(10, 4, 3, 0, 150, 1, 0, True))
+    wf("ca_mi",missile(10, 3, 3, 0, 150))
+    # Seaguard
+    wf("sg_me_chd",melee(15, 4, 3, 2, 240, 1, 0, True))
+    wf("sg_me",melee(15, 4, 3, 1, 240, 1, 0, True))
+    wf("sg_mi",missile(15, 3, 3, 0, 240))
+    
+    # Special
+    # Sword Masters
+    wf("sm",melee(10,6,5,2,125,1,0,True))
+    # Lion Guard
+    wf("lg_mw",melee(10, 5, 6, 3, 220, 2, 0, False))
+    wf("lg",melee(10, 5, 6, 3, 220, 1, 0, False))
+    # Flame Wardens
+    wf("fw",melee(15, 5, 4, 1, 260, 1, 0, True))
+    # Knights of Ryma
+    wf("kor_chg",melee([10,5], [5,3], [6,3], [3,0], 320, [1,1], [0,0], [True,False]))
+    wf("kor",melee([10,5], [5,3], [4,3], [1,0], 320, [1,1], [0,0], [True,False]))
+    # Reaver Chariots
+    wf("rc_me_chg",melee([2,2,0], [4,3,0], [4,3,5], [1,0,2], 90, [1,1,1], [0,0,3.5], [True,False,False]))
+    wf("rc_me",melee([2,2,0], [4,3,0], [3,3,5], [0,0,2], 90, [1,1,1], [0,0,0], [True,False,False]))
+    wf("rc_mi",missile(2, 3, 3, 0, 90))
+    # Lion Chariot
+    wf("lc_chg_mw",melee([2,4,0], [5,5,0], [6,5,5], [3,2,2], 195, [2,1,1], [0,0,4.5], [False,False,False]))
+    wf("lc_chg",melee([2,4,0], [5,5,0], [6,5,5], [3,2,2], 195, [1,1,1], [0,0,4.5], [False,False,False]))
+    wf("lc_mw",melee([2,4,0], [5,5,0], [6,5,5], [3,2,2], 195, [2,1,1], [0,0,0], [False,False,False]))
+    wf("lc",melee([2,4,0], [5,5,0], [6,5,5], [3,2,2], 195, [1,1,1], [0,0,0], [False,False,False]))
+    # Giant Eagles
+    wf("ge_st",melee(2, 5, 4, 1, 100, 1, 1, False)) # Large => stomp(1)
+    wf("ge",melee(2, 5, 4, 1, 100, 1, 0, False))
+    # Frost Phoenix
+    wf("frp_st",melee(4, 5+2, 5, 2, 340, 1, 3.5, False)) # Gigantic => stomp(d6)
+    wf("frp_wb_st",melee([4,2], [5+2,5+2], [5,4], [2,1], 380, [1,1], [3.5,0], [False,True])) # Gigantic => stomp(d6)
+    wf("frp",melee(4, 5+2, 5, 2, 340, 1, 0, False))
+    wf("frp_wb",melee([4,2], [5+2,5+2], [5,4], [2,1], 380, [1,1], [0,0], [False,True]))
+    #Fire Phoenix
+    wf("fip_st",melee([4,0], [5,0], [5,4], [2,1], 365, [1,1], [3.5,3.5], [False,False])) # Gigantic => stomp(d6)
+    wf("fip_wb_st",melee([4,0,2], [5,0,5], [5,4,4], [2,1,1], 365, [1,1,1], [3.5,3.5,0], [False,False,False])) # Gigantic => stomp(d6)
+    wf("fip",melee([4,0], [5,0], [5,4], [2,1], 365, [1,1], [0,3.5], [False,False]))
+    wf("fip_wb",melee([4,0,2], [5,0,5], [5,4,4], [2,1,1], 365, [1,1,1], [0,3.5,0], [False,False,False]))
+    # Initiate of the Fiercy Heart
+    wf("iotfh_st_br",melee([1,4,0], [4,5,0], [3,5,4], [0,2,1], 330, [1,1,1], [0,1,7], [True,False,False])) # Large => stomp(1)
+    wf("iotfh_br",melee([1,4,0], [4,5,0], [3,5,4], [0,2,1], 330, [1,1,1], [0,0,7], [True,False,False]))
+    wf("iotfh_st",melee([1,4], [4,5], [3,5], [0,2], 330, [1,1], [0,1], [True,False])) # Large => stomp(1)
+    wf("iotfh",melee([1,4], [4,5], [3,5], [0,2], 330, [1,1], [0,0], [True,False]))
+    
     
