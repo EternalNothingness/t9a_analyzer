@@ -65,6 +65,7 @@ avgdmg_mi=lambda aim,_str,ap,res,arm,wmod=0: paim(aim)*ptowound(_str, res,wmod)*
 avgdmgpt=lambda dmg,pt: dmg/pt
 
 def show(l1):
+    l2=c.copy(np.array(l1).round(2).tolist())
     ltest=c.copy([6*["def","res","arm","dmg","norm"]])
     for i in range(35):
         # ltest.append(l1[0+1]+l1[35+1]+...)
@@ -75,10 +76,10 @@ def show(l1):
         if i%7 == 0 and i!=0:
             ltest.append(6*['','','','',''])
         for j in range(6):
-            ltemp+=c.copy(l1[i+35*j])
+            ltemp+=c.copy(l2[i+35*j])
         ltest.append(ltemp)
     for row in ltest:
-        print("{: >7} {: >4} {: >4} {: >4} {: >4} {: >7} {: >4} {: >4} {: >4} {: >4} {: >7} {: >4} {: >4} {: >4} {: >4} {: >7} {: >4} {: >4} {: >4} {: >4} {: >7} {: >4} {: >4} {: >4} {: >4} {: >7} {: >4} {: >4} {: >4} {: >4}".format(*row))
+        print("{: >7} {: >5} {: >5} {: >5} {: >5} {: >7} {: >5} {: >5} {: >5} {: >5} {: >7} {: >5} {: >5} {: >5} {: >5} {: >7} {: >5} {: >5} {: >5} {: >5} {: >7} {: >5} {: >5} {: >5} {: >5} {: >7} {: >5} {: >5} {: >5} {: >5}".format(*row))
 
 def missile(att,aim,_str,ap,pt,mw=1,aa=1,acc=False,qtf=False,unw=False,mof=False,sta=False,rel=False,test=False):
     if test==True:
@@ -124,8 +125,8 @@ def missile(att,aim,_str,ap,pt,mw=1,aa=1,acc=False,qtf=False,unw=False,mof=False
                     dmg+=att*mw*aa*avgdmg_mi(aim, _str, ap, res, arm)
                 dmgpt=avgdmgpt(100*dmg,pt)
                 if test==True:
-                    l1.append([aim,res,arm,round(dmg,1),round(dmgpt,1)])
-                l2.append([aim,res,arm,round(dmg,1),round(dmgpt,1)])
+                    l1.append([aim,res,arm,round(dmg,2),round(dmgpt,2)])
+                l2.append([aim,res,arm,dmg,dmgpt])
             if test==True:
                 l1.append(['','','','','',''])
     if test==True:
@@ -170,8 +171,8 @@ def melee(att,off,_str,ap,pt,mw=1,autohits=0,hmod=0,wmod=0,test=False):
                     dmg=att*mw*avgdmg_me(off,_str,ap,_def,res,arm,hmod,wmod)+avgdmg_autohits(autohits, _str, ap, res, arm,wmod)
                 dmgpt=avgdmgpt(100*dmg,pt)
                 if test==True:
-                    l1.append([_def,res,arm,round(dmg,1),round(dmgpt,1)])
-                l2.append([_def,res,arm,round(dmg,1),round(dmgpt,1)])
+                    l1.append([_def,res,arm,round(dmg,2),round(dmgpt,2)])
+                l2.append([_def,res,arm,dmg,dmgpt])
             if test==True:
                 l1.append(['','','','',''])
     if test==True:
@@ -186,7 +187,7 @@ def melee(att,off,_str,ap,pt,mw=1,autohits=0,hmod=0,wmod=0,test=False):
                 ltemp+=c.copy(l1[i+40*j+1])
             ltest.append(ltemp)
         for row in ltest:
-            print("{: >7} {: >3} {: >3} {: >5} {: >5} {: >7} {: >3} {: >3} {: >5} {: >5} {: >7} {: >3} {: >3} {: >5} {: >5} {: >7} {: >3} {: >3} {: >5} {: >5} {: >7} {: >3} {: >3} {: >5} {: >5} {: >7} {: >3} {: >3} {: >5} {: >5}".format(*row))
+            print("{: >7} {: >5} {: >5} {: >5} {: >5} {: >7} {: >5} {: >5} {: >5} {: >5} {: >7} {: >5} {: >5} {: >5} {: >5} {: >7} {: >5} {: >5} {: >5} {: >5} {: >7} {: >5} {: >5} {: >5} {: >5} {: >7} {: >5} {: >5} {: >5} {: >5}".format(*row))
     if test==False:
         return l2
     
@@ -195,6 +196,7 @@ def melee_filter(att,off,_str,ap,pt,mw=1,autohits=0,hmod=0,wmod=0,_def=-1,res=-1
     lret=[]
     if test==True:
         ltest=[["def","res","arm","dmg","norm"]]
+        l=np.array(l).round(2).tolist()
     if _def!=-1:
         for i in range(len(l)):
             if l[i][0]==_def:
@@ -229,10 +231,11 @@ def melee_compare(l1,l2,test=False):
     arra=np.array(l1)[:,3:] # get dmg and norm from l1
     arrb=np.array(l2)[:,3:] # get dmg and norm from l2
     if (arrb>0).all:
-        arrc=(arra/arrb).round(1).copy() # calculates relative dmg/norm
+        arrc=(arra/arrb).copy() # calculates relative dmg/norm
         arrc=np.concatenate((np.array(l1)[:,:3],arrc),1)
         lret = arrc.tolist()
         if test==True:
+            lret = arrc.round(2).tolist()
             ltest=c.copy([6*["def","res","arm","dmg","norm"]])
             for i in range(35):
                 # ltest.append(l1[0+1]+l1[35+1]+...)
@@ -246,7 +249,7 @@ def melee_compare(l1,l2,test=False):
                     ltemp+=c.copy(lret[i+35*j])
                 ltest.append(ltemp)
             for row in ltest:
-                print("{: >7} {: >4} {: >4} {: >4} {: >4} {: >7} {: >4} {: >4} {: >4} {: >4} {: >7} {: >4} {: >4} {: >4} {: >4} {: >7} {: >4} {: >4} {: >4} {: >4} {: >7} {: >4} {: >4} {: >4} {: >4} {: >7} {: >4} {: >4} {: >4} {: >4}".format(*row))
+                print("{: >7} {: >5} {: >5} {: >5} {: >5} {: >7} {: >5} {: >5} {: >5} {: >5} {: >7} {: >5} {: >5} {: >5} {: >5} {: >7} {: >5} {: >5} {: >5} {: >5} {: >7} {: >5} {: >5} {: >5} {: >5} {: >7} {: >5} {: >5} {: >5} {: >5}".format(*row))
         if test==False:
             return lret
         
@@ -337,6 +340,8 @@ def wr_he():
     wf("gw_mi",missile(5, 2, 3, 0, 135))
  
 if __name__ == "__main__":
+    wr_he()
+    
     # Core
     # Citizen Spears
     cs_chd=lf("cs_chd")
