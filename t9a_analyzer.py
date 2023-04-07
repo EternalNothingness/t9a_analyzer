@@ -254,6 +254,10 @@ wf=lambda fname,l: np.savetxt("./data/"+fname+".txt",np.array(l))
 lf=lambda fname: np.loadtxt("./data/"+fname+".txt").tolist()
 
 def wr_he():
+    # Characters
+    
+    # Mounts
+    
     # Core
     # Citizen Spears
     wf("cs_chd",melee(20, 4, 3, 2, 260, hmod=1))
@@ -316,3 +320,97 @@ def wr_he():
     wf("sgr_mi_1_1",missile(1, 3, 6, 10, 180,mw=2,mof=True,rel=True))
     wf("sgr_mi_1_5",missile([1,1], 3, [3,6], [10,10], 180,mw=[1,2],aa=[4,1],mof=True,rel=True))
     wf("sgr_mi_6",missile(6, 3, 4, 2, 180,mof=True,rel=True))
+    # Sky Sloop
+    wf("ss_me_chg",melee([2,2,0],[4,4,0],[4,4,5],[1,1,2],225,autohits=[0,0,3.5],hmod=[1,0,0]))
+    wf("ss_me",melee([2,2,0],[4,4,0],[3,4,5],[0,1,2],225,autohits=[0,0,0],hmod=[1,0,0]))
+    wf("ss_mi",missile(4,3,5,3,225,qtf=True,rel=True))
+    
+    # Queen's Bows
+    # Queen's Guard
+    wf("qg_me",melee(5, 5, 3, 0, 135,hmod=1))
+    wf("qg_me_s_chd",melee(5, 5, 3, 2, 140,hmod=1))
+    wf("qg_me_s",melee(5, 5, 3, 1, 140,hmod=1))
+    wf("qg_mi",missile(5, 2, 4, 1, 135))
+    # Grey Watchers
+    wf("gw_me",melee(5, 4, 3, 0, 135))
+    wf("gw_me_pw",melee(10, 4, 3, 0, 140))
+    wf("gw_mi",missile(5, 2, 3, 0, 135))
+ 
+if __name__ == "__main__":
+    # Core
+    # Citizen Spears
+    cs_chd=lf("cs_chd")
+    cs=lf("cs")
+    # Highborn Lancers
+    hl_chg=lf("hl_chg")
+    hl=lf("hl")
+    # Ellein Reavers
+    er_me_chg=lf("er_me_chg")
+    er_me=lf("er_me")
+    er_mi=lf("er_mi")
+    # Citizen Archers
+    ca_me=lf("ca_me")
+    ca_mi=lf("ca_mi")
+    # Seaguard
+    sg_me_chd=lf("sg_me_chd")
+    sg_me=lf("sg_me")
+    sg_mi=lf("sg_mi")
+    
+    # Special
+    # Sword Masters
+    sm=lf("sm")
+    # Lion Guard
+    lg_mw=lf("lg_mw")
+    lg=lf("lg")
+    # Flame Wardens
+    fw=lf("fw")
+    # Knights of Ryma
+    kor_chg=lf("kor_chg")
+    kor=lf("kor")
+    # Reaver Chariots
+    rc_me_chg=lf("rc_me_chg")
+    rc_me=lf("rc_me")
+    rc_mi=lf("rc_mi")
+    # Lion Chariot
+    lc_chg_mw=lf("lc_chg_mw")
+    lc_chg=lf("lc_chg")
+    lc_mw=lf("lc_mw")
+    lc=lf("lc")
+    # Giant Eagles
+    ge_st=lf("ge_st")
+    ge=lf("ge")
+    # Frost Phoenix
+    frp_st=lf("frp_st")
+    frp_wb_st=lf("frp_wb_st")
+    frp=lf("frp")
+    frp_wb=lf("frp_wb")
+    #Fire Phoenix
+    fip_st=lf("fip_st")
+    fip_wb_st=lf("fip_wb_st")
+    fip=lf("fip")
+    fip_wb=lf("fip_wb")
+    # Initiate of the Fiercy Heart
+    iotfh_st_br=lf("iotfh_st_br")
+    iotfh_br=lf("iotfh_br")
+    iotfh_st=lf("iotfh_st")
+    iotfh=lf("iotfh")
+    # Sea Guard Reaper
+    sgr_me=lf("sgr_me")
+    sgr_mi_1_1=lf("sgr_mi_1_1")
+    sgr_mi_1_5=lf("sgr_mi_1_5")
+    sgr_mi_6=lf("sgr_mi_6")
+    # Sky Sloop
+    ss_me_chg=lf("ss_me_chg")
+    ss_me=lf("ss_me")
+    ss_mi=lf("ss_mi")
+    
+    # Queen's Bows
+    # Queen's Guard
+    qg_me=lf("qg_me")
+    qg_me_s_chd=lf("qg_me_s_chd")
+    qg_me_s=lf("qg_me_s")
+    qg_mi=lf("qg_mi")
+    # Grey Watchers
+    gw_me=lf("gw_me")
+    gw_me_pw=lf("gw_me_pw")
+    gw_mi=lf("gw_mi")
