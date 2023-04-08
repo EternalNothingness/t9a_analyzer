@@ -7,7 +7,7 @@ Created on Wed Apr  5 13:46:46 2023
 import copy as c
 import numpy as np
 #import pathlib as pl
-#import pprint as pp
+import pprint as pp
 
 def ptohit(off,_def,mod=0): # chance to hit with melee weapon
     if off-_def>=4:
@@ -213,13 +213,11 @@ def missile_compare(l1,l2,test=False):
         return lret
     
 def eff(l1,test=False):
-    l2=np.where(np.array(l1)[:,4]>=1)
-    l3=np.where(np.array(l1)[:,4]<1)
+    order=np.array(l1)[:,4].argsort(0)
     lret=[]
-    for i in l2[0]:
-        lret.append(l1[i])
-    for i in l3[0]:
-        lret.append(l1[i])
+    for i in range(len(l1)):
+        lret.append(l1[order[i]])
+    lret=np.array(lret)[::-1,:].tolist()
     if test==True:
         show_me(lret)
     else:
