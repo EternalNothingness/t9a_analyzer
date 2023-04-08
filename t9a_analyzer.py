@@ -64,7 +64,7 @@ avgdmg_autohits=lambda n,_str,ap,res,arm,wmod=0:n*ptowound(_str, res,wmod)*n_pto
 avgdmg_mi=lambda aim,_str,ap,res,arm,wmod=0: paim(aim)*ptowound(_str, res,wmod)*n_ptoarm(ap, arm)
 avgdmgpt=lambda dmg,pt: dmg/pt
 
-def show(l1):
+def show_me(l1):
     l2=c.copy(np.array(l1).round(2).tolist())
     ltest=c.copy([6*["def","res","arm","dmg","norm"]])
     for i in range(35):
@@ -81,9 +81,25 @@ def show(l1):
     for row in ltest:
         print("{: >7} {: >5} {: >5} {: >5} {: >5} {: >7} {: >5} {: >5} {: >5} {: >5} {: >7} {: >5} {: >5} {: >5} {: >5} {: >7} {: >5} {: >5} {: >5} {: >5} {: >7} {: >5} {: >5} {: >5} {: >5} {: >7} {: >5} {: >5} {: >5} {: >5}".format(*row))
 
+def show_mi(l1):
+    l2=c.copy(np.array(l1).round(2).tolist())
+    ltest=[['','','Short','Range','']+['','','Long','Range','']+['','Move','and','Shoot','']+['','Stand','and','Shoot','']+['','','Soft','Cover','']+['','','Hard','Cover','']]
+    ltest.append(6*["aim","res","arm","dmg","norm"])
+    for i in range(35):
+        # ltest.append(l1[0+1]+l1[35+1]+...)
+        # ltest.append(l1[1+1]+l1[36+1]+...)
+        #...
+        # ltest.append(l1[34+1]+l1[69+1]...)
+        ltemp=[]
+        if i%7 == 0 and i!=0:
+            ltest.append(6*['','','','',''])
+        for j in range(6):
+            ltemp+=c.copy(l2[i+35*j])
+        ltest.append(ltemp)
+    for row in ltest:
+        print("{: >7} {: >5} {: >5} {: >5} {: >5} {: >7} {: >5} {: >5} {: >5} {: >5} {: >7} {: >5} {: >5} {: >5} {: >5} {: >7} {: >5} {: >5} {: >5} {: >5} {: >7} {: >5} {: >5} {: >5} {: >5} {: >7} {: >5} {: >5} {: >5} {: >5}".format(*row))
+
 def missile(att,aim,_str,ap,pt,mw=1,aa=1,acc=False,qtf=False,unw=False,mof=False,sta=False,rel=False,test=False):
-    if test==True:
-        l1=[["aim","res","arm","dmg","norm"]]
     l2=[]
     aim_orig=aim
     if type(att)==list: # extend optional parameters to lists
@@ -124,32 +140,14 @@ def missile(att,aim,_str,ap,pt,mw=1,aa=1,acc=False,qtf=False,unw=False,mof=False
                 else:
                     dmg+=att*mw*aa*avgdmg_mi(aim, _str, ap, res, arm)
                 dmgpt=avgdmgpt(100*dmg,pt)
-                if test==True:
-                    l1.append([aim,res,arm,round(dmg,2),round(dmgpt,2)])
                 l2.append([aim,res,arm,dmg,dmgpt])
-            if test==True:
-                l1.append(['','','','','',''])
     if test==True:
-        ltest=[['','','Short','Range','']+['','','Long','Range','']+['','Move','and','Shoot','']+['','Stand','and','Shoot','']+['','','Soft','Cover','']+['','','Hard','Cover','']]
-        ltest.append(6*["aim","res","arm","dmg","norm"])
-        for i in range(40):
-            # ltest.append(l1[0+1]+l1[35+1]+...)
-            # ltest.append(l1[1+1]+l1[36+1]+...)
-            #...
-            # ltest.append(l1[34+1]+l1[69+1]...)
-            ltemp=[]
-            for j in range(6):
-                ltemp+=c.copy(l1[i+40*j+1])
-            ltest.append(ltemp)
-        for row in ltest:
-            print("{: >7} {: >5} {: >5} {: >5} {: >5} {: >7} {: >5} {: >5} {: >5} {: >5} {: >7} {: >5} {: >5} {: >5} {: >5} {: >7} {: >5} {: >5} {: >5} {: >5} {: >7} {: >5} {: >5} {: >5} {: >5} {: >7} {: >5} {: >5} {: >5} {: >5}".format(*row))
-    if test==False:
+        show_mi(l2)
+    else:
         return l2
 
 # treat breath as an additional modelpart with 0 attack and auto hits
 def melee(att,off,_str,ap,pt,mw=1,autohits=0,hmod=0,wmod=0,test=False):
-    if test==True:
-        l1=[["def","res","arm","dmg","norm"]]
     l2=[]
     if type(att)==list: # extend optional parameters to lists
         if type(mw)!=list:
@@ -170,61 +168,24 @@ def melee(att,off,_str,ap,pt,mw=1,autohits=0,hmod=0,wmod=0,test=False):
                 else:
                     dmg=att*mw*avgdmg_me(off,_str,ap,_def,res,arm,hmod,wmod)+avgdmg_autohits(autohits, _str, ap, res, arm,wmod)
                 dmgpt=avgdmgpt(100*dmg,pt)
-                if test==True:
-                    l1.append([_def,res,arm,round(dmg,2),round(dmgpt,2)])
                 l2.append([_def,res,arm,dmg,dmgpt])
-            if test==True:
-                l1.append(['','','','',''])
     if test==True:
-        ltest=c.copy([6*l1[0]])
-        for i in range(40):
-            # ltest.append(l1[0+1]+l1[35+1]+...)
-            # ltest.append(l1[1+1]+l1[36+1]+...)
-            #...
-            # ltest.append(l1[34+1]+l1[69+1]...)
-            ltemp=[]
-            for j in range(6):
-                ltemp+=c.copy(l1[i+40*j+1])
-            ltest.append(ltemp)
-        for row in ltest:
-            print("{: >7} {: >5} {: >5} {: >5} {: >5} {: >7} {: >5} {: >5} {: >5} {: >5} {: >7} {: >5} {: >5} {: >5} {: >5} {: >7} {: >5} {: >5} {: >5} {: >5} {: >7} {: >5} {: >5} {: >5} {: >5} {: >7} {: >5} {: >5} {: >5} {: >5}".format(*row))
-    if test==False:
+        show_me(l2)
+    else:
         return l2
     
-def melee_filter(att,off,_str,ap,pt,mw=1,autohits=0,hmod=0,wmod=0,_def=-1,res=-1,arm=-1,test=False):
-    l=melee(att,off,_str,ap,pt,mw,autohits,hmod,wmod)
+def melee_filter(l,_def=-1,res=-1,arm=-1,test=False):
+    lc=c.copy(l)
     lret=[]
+    for i in range(len(lc)):
+        if (lc[i][0]==_def or _def==-1) and (lc[i][1]==res or res==-1) and (lc[i][2]==arm or arm==-1):
+            lret.append(lc[i])
     if test==True:
         ltest=[["def","res","arm","dmg","norm"]]
-        l=np.array(l).round(2).tolist()
-    if _def!=-1:
-        for i in range(len(l)):
-            if l[i][0]==_def:
-                lret.append(l[i])
-                if test==True:
-                    ltest.append(l[i])
-        l=lret
-    if res!=-1:
-        lret=[]
-        ltest=[["def","res","arm","dmg","norm"]]
-        for i in range(len(l)):
-            if l[i][1]==res:
-                lret.append(l[i])
-                if test==True:
-                    ltest.append(l[i])
-        l=lret
-    if arm!=-1:
-        lret=[]
-        ltest=[["def","res","arm","dmg","norm"]]
-        for i in range(len(l)):
-            if l[i][2]==arm:
-                lret.append(l[i])
-                if test==True:
-                    ltest.append(l[i])
-    if test==True:
+        ltest.extend(np.array(lret).round(2).tolist())
         for row in ltest:
             print("{: >5} {: >5} {: >5} {: >5} {: >5}".format(*row))
-    if test==False:
+    else:
         return lret
     
 def melee_compare(l1,l2,test=False):
@@ -235,43 +196,33 @@ def melee_compare(l1,l2,test=False):
         arrc=np.concatenate((np.array(l1)[:,:3],arrc),1)
         lret = arrc.tolist()
         if test==True:
-            lret = arrc.round(2).tolist()
-            ltest=c.copy([6*["def","res","arm","dmg","norm"]])
-            for i in range(35):
-                # ltest.append(l1[0+1]+l1[35+1]+...)
-                # ltest.append(l1[1+1]+l1[36+1]+...)
-                #...
-                # ltest.append(l1[34+1]+l1[69+1]...)
-                ltemp=[]
-                if i%7 == 0 and i!=0:
-                    ltest.append(6*['','','','',''])
-                for j in range(6):
-                    ltemp+=c.copy(lret[i+35*j])
-                ltest.append(ltemp)
-            for row in ltest:
-                print("{: >7} {: >5} {: >5} {: >5} {: >5} {: >7} {: >5} {: >5} {: >5} {: >5} {: >7} {: >5} {: >5} {: >5} {: >5} {: >7} {: >5} {: >5} {: >5} {: >5} {: >7} {: >5} {: >5} {: >5} {: >5} {: >7} {: >5} {: >5} {: >5} {: >5}".format(*row))
-        if test==False:
+            show_me(lret)
+        else:
             return lret
         
 def missile_compare(l1,l2,test=False):
     arra=np.array(l1)[:,3:] # get dmg and norm from l1
     arrb=np.array(l2)[:,3:] # get dmg and norm from l2
     arrc=(arra/arrb).copy() # calculates relative dmg/norm
-    arrc=np.concatenate((np.array(l1)[:,:3],arrc),1)
+    arrd=np.array(l1)[:,0,None]-np.array(l2)[:,0,None] # calculates diff of aim
+    arrc=np.concatenate((arrd,np.array(l1)[:,1:3],arrc),1)
     lret = arrc.tolist()
     if test==True:
-        lret = arrc.round(2).tolist()
-        ltest=c.copy([6*["aim","res","arm","dmg","norm"]])
-        for i in range(35):
-            ltemp=[]
-            if i%7 == 0 and i!=0:
-                ltest.append(6*['','','','',''])
-            for j in range(6):
-                ltemp+=c.copy(lret[i+35*j])
-            ltest.append(ltemp)
-        for row in ltest:
-            print("{: >7} {: >5} {: >5} {: >5} {: >5} {: >7} {: >5} {: >5} {: >5} {: >5} {: >7} {: >5} {: >5} {: >5} {: >5} {: >7} {: >5} {: >5} {: >5} {: >5} {: >7} {: >5} {: >5} {: >5} {: >5} {: >7} {: >5} {: >5} {: >5} {: >5}".format(*row))
-    if test==False:
+        show_mi(lret)
+    else:
+        return lret
+    
+def eff(l1,test=False):
+    l2=np.where(np.array(l1)[:,4]>=1)
+    l3=np.where(np.array(l1)[:,4]<1)
+    lret=[]
+    for i in l2[0]:
+        lret.append(l1[i])
+    for i in l3[0]:
+        lret.append(l1[i])
+    if test==True:
+        show_me(lret)
+    else:
         return lret
         
 wf=lambda fname,l: np.savetxt("./data/"+fname+".txt",np.array(l))
