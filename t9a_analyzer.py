@@ -188,7 +188,7 @@ def melee_filter(l,_def=-1,res=-1,arm=-1,test=False):
     else:
         return lret
     
-def melee_compare(l1,l2,test=False):
+def compare_me(l1,l2,test=False):
     arra=np.array(l1)[:,3:] # get dmg and norm from l1
     arrb=np.array(l2)[:,3:] # get dmg and norm from l2
     if (arrb>0).all:
@@ -200,7 +200,7 @@ def melee_compare(l1,l2,test=False):
         else:
             return lret
         
-def missile_compare(l1,l2,test=False):
+def compare_mi(l1,l2,test=False):
     arra=np.array(l1)[:,3:] # get dmg and norm from l1
     arrb=np.array(l2)[:,3:] # get dmg and norm from l2
     arrc=(arra/arrb).copy() # calculates relative dmg/norm
@@ -222,6 +222,16 @@ def eff(l1,test=False):
         show_me(lret)
     else:
         return lret
+
+def compare(l1,l2=None,test=False):
+    lnorm=np.array([[] for i in range(len(l1[0]))])
+    for mat in l1:
+        lnorm=np.concatenate((lnorm,np.array(mat)[:,4,None]),1)
+    order=lnorm.argsort()
+    lret=np.concatenate((np.array(l1)[0,:,:3],order),1).tolist()
+    for i in range(len(lret)):
+        lret[i][3:]=np.array(l2)[order[i,::-1]].tolist()
+    return lret
         
 wf=lambda fname,l: np.savetxt("./data/"+fname+".txt",np.array(l))
 lf=lambda fname: np.loadtxt("./data/"+fname+".txt").tolist()
@@ -262,8 +272,8 @@ def wr_he():
     wf("kor_chg",melee([10,5], [5,3], [6,3], [3,0], 320, hmod=[1,0]))
     wf("kor",melee([10,5], [5,3], [4,3], [1,0], 320, hmod=[1,0]))
     # Reaver Chariots
-    wf("rc_me_chg",melee([2,2,0], [4,3,0], [4,3,5], [1,0,2], 90, autohits=[0,0,3.5], hmod=[1,0,0]))
-    wf("rc_me",melee([2,2,0], [4,3,0], [3,3,5], [0,0,2], 90, hmod=[1,0,0]))
+    wf("rc_me_chg",melee([2,2,0], [4,3,0], [4,3,5], [1,0,2], 110, autohits=[0,0,3.5], hmod=[1,0,0]))
+    wf("rc_me",melee([2,2,0], [4,3,0], [3,3,5], [0,0,2], 110, hmod=[1,0,0]))
     wf("rc_mi",missile(2, 3, 3, 0, 90))
     # Lion Chariot
     wf("lc_chg_mw",melee([2,4,0], [5,5,0], [6,5,5], [3,2,2], 195, mw=[2,1,1], autohits=[0,0,4.5]))
@@ -271,7 +281,7 @@ def wr_he():
     wf("lc_mw",melee([2,4,0], [5,5,0], [6,5,5], [3,2,2], 195, mw=[2,1,1]))
     wf("lc",melee([2,4,0], [5,5,0], [6,5,5], [3,2,2], 195))
     # Giant Eagles
-    wf("ge_st",melee(2, 5, 4, 1, 100)) # Large => stomp(1)
+    wf("ge_st",melee(2, 5, 4, 1, 100,autohits=1)) # Large => stomp(1)
     wf("ge",melee(2, 5, 4, 1, 100))
     # Frost Phoenix
     wf("frp_st",melee(4, 5+2, 5, 2, 340, autohits=3.5)) # Gigantic => stomp(d6)
@@ -286,16 +296,16 @@ def wr_he():
     # Initiate of the Fiercy Heart
     wf("iotfh_st_br",melee([1,4,0], [4,5,0], [3,5,4], [0,2,1], 330, autohits=[0,1,7], hmod=[1,0,0])) # Large => stomp(1)
     wf("iotfh_br",melee([1,4,0], [4,5,0], [3,5,4], [0,2,1], 330, autohits=[0,0,7], hmod=[1,0,0]))
-    wf("iotfh_st",melee([1,4], [4,5], [3,5], [0,2], 330, [1,1], autohits=[0,1], hmod=[1,0])) # Large => stomp(1)
+    wf("iotfh_st",melee([1,4], [4,5], [3,5], [0,2], 330, autohits=[0,1], hmod=[1,0])) # Large => stomp(1)
     wf("iotfh",melee([1,4], [4,5], [3,5], [0,2], 330, hmod=[1,0]))
     # Sea Guard Reaper
     wf("sgr_me",melee(2, 4, 3, 0, 190,hmod=1))
-    wf("sgr_mi_1_1",missile(1, 3, 6, 10, 180,mw=2,mof=True,rel=True))
-    wf("sgr_mi_1_5",missile([1,1], 3, [3,6], [10,10], 180,mw=[1,2],aa=[4,1],mof=True,rel=True))
-    wf("sgr_mi_6",missile(6, 3, 4, 2, 180,mof=True,rel=True))
+    wf("sgr_mi_1_1",missile(1, 3, 6, 10, 190,mw=2,mof=True,rel=True))
+    wf("sgr_mi_1_5",missile([1,1], 3, [3,6], [10,10], 190,mw=[1,1],aa=[4,1],mof=True,rel=True)) # mw=1 is more realistic
+    wf("sgr_mi_6",missile(6, 3, 4, 2, 190,mof=True,rel=True))
     # Sky Sloop
     wf("ss_me_chg",melee([2,2,0],[4,4,0],[4,4,5],[1,1,2],225,autohits=[0,0,3.5],hmod=[1,0,0]))
-    wf("ss_me",melee([2,2,0],[4,4,0],[3,4,5],[0,1,2],225,autohits=[0,0,0],hmod=[1,0,0]))
+    wf("ss_me",melee([2,2,0],[4,4,0],[3,4,5],[0,1,2],225,hmod=[1,0,0]))
     wf("ss_mi",missile(4,3,5,3,225,qtf=True,rel=True))
     
     # Queen's Bows
@@ -307,7 +317,7 @@ def wr_he():
     # Grey Watchers
     wf("gw_me",melee(5, 4, 3, 0, 135))
     wf("gw_me_pw",melee(10, 4, 3, 0, 140))
-    wf("gw_mi",missile(5, 2, 3, 0, 135))
+    wf("gw_mi",missile(5, 2, 3, 0, 135,acc=True))
  
 if __name__ == "__main__":
     wr_he()
