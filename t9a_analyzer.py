@@ -174,7 +174,7 @@ def melee(att,off,_str,ap,pt,mw=1,autohits=0,hmod=0,wmod=0,test=False):
     else:
         return l2
     
-def melee_filter(l,_def=-1,res=-1,arm=-1,test=False):
+def filter_me(l,_def=-1,res=-1,arm=-1,test=False):
     lc=c.copy(l)
     lret=[]
     for i in range(len(lc)):
@@ -223,14 +223,26 @@ def eff(l1,test=False):
     else:
         return lret
 
-def compare(l1,l2=None,test=False):
+def compare(l1,l2,test=False):
     lnorm=np.array([[] for i in range(len(l1[0]))])
     for mat in l1:
         lnorm=np.concatenate((lnorm,np.array(mat)[:,4,None]),1)
     order=lnorm.argsort()
+    order3=np.array([[] for i in range(len(l1[0]))])
+    for i in range(len(l1)): # len(l1)=number of units
+        order3=np.concatenate((order3, order[:,i,None], order[:,i,None],order[:,i,None]),1)
+    order3=order3[:,::-1].tolist() # reverse order (best unit first)
+    lret=np.concatenate((np.array(l1)[0,:,:3],np.array(order3)),1).tolist()
+    for i in range(len(order3)):
+        for j in range(len(l1)): # len(l1)=number of units
+            lret[i][3+3*j]=l2[int(order3[i][3*j])]
+            lret[i][3+3*j+1]=round(l1[int(order3[i][3*j+1])][i][3],2)
+            lret[i][3+3*j+2]=round(l1[int(order3[i][3*j+2])][i][4]/l1[int(order3[i][3*0+2])][i][4],2) # determine cost effectiveness
+    '''
     lret=np.concatenate((np.array(l1)[0,:,:3],order),1).tolist()
     for i in range(len(lret)):
         lret[i][3:]=np.array(l2)[order[i,::-1]].tolist()
+    '''
     return lret
         
 wf=lambda fname,l: np.savetxt("./data/"+fname+".txt",np.array(l))
