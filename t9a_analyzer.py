@@ -176,7 +176,7 @@ def melee(att,off,_str,ap,pt,mw=1,autohits=0,hmod=0,wmod=0,test=False):
     else:
         return l2
     
-def filter_me(l,_def=-1,res=-1,arm=-1,test=False):
+def filter2_me(l,_def=-1,res=-1,arm=-1,test=False):
     lc=c.copy(l)
     lret=[]
     for i in range(len(lc)):
@@ -190,7 +190,7 @@ def filter_me(l,_def=-1,res=-1,arm=-1,test=False):
     else:
         return lret
     
-def compare_me(l1,l2,test=False):
+def compare2_me(l1,l2,test=False):
     arra=np.array(l1)[:,3:] # get dmg and norm from l1
     arrb=np.array(l2)[:,3:] # get dmg and norm from l2
     if (arrb>0).all:
@@ -202,7 +202,7 @@ def compare_me(l1,l2,test=False):
         else:
             return lret
         
-def compare_mi(l1,l2,test=False):
+def compare2_mi(l1,l2,test=False):
     arra=np.array(l1)[:,3:] # get dmg and norm from l1
     arrb=np.array(l2)[:,3:] # get dmg and norm from l2
     arrc=(arra/arrb).copy() # calculates relative dmg/norm
@@ -214,7 +214,7 @@ def compare_mi(l1,l2,test=False):
     else:
         return lret
     
-def eff(l1,test=False):
+def sorteff(l1,test=False):
     order=np.array(l1)[:,4].argsort(0)
     lret=[]
     for i in range(len(l1)):
@@ -225,7 +225,7 @@ def eff(l1,test=False):
     else:
         return lret
 
-def compare(l1,l2,test=False):
+def compare_me(l1,l2,test=False):
     lnorm=np.array([[] for i in range(len(l1[0]))])
     for mat in l1:
         lnorm=np.concatenate((lnorm,np.array(mat)[:,4,None]),1)
@@ -239,16 +239,11 @@ def compare(l1,l2,test=False):
         for j in range(len(l1)): # len(l1)=number of units
             lret[i][3+3*j]=l2[int(order3[i][3*j])]
             lret[i][3+3*j+1]=l1[int(order3[i][3*j+1])][i][3]
-            lret[i][3+3*j+2]=l1[int(order3[i][3*j+2])][i][4]/l1[int(order3[i][3*0+2])][i][4] # determine cost effectiveness
-    '''
-    lret=np.concatenate((np.array(l1)[0,:,:3],order),1).tolist()
-    for i in range(len(lret)):
-        lret[i][3:]=np.array(l2)[order[i,::-1]].tolist()
-    '''
+            lret[i][3+3*j+2]=(np.array(l1[int(order3[i][3*j+2])][i][4])/np.array(l1[int(order3[i][3*0+2])][i][4])).tolist() # determine cost effectiveness
     if test==True:
         ltemp=np.array([[] for i in range(len(l1[0]))])
         for i in range(len(lret[0])):
-            if type(lret[0][i])==str:
+            if type(lret[0][i])==str: # test if rounding is sensible
                 ltemp=np.concatenate((ltemp,np.array(lret)[:,i,None]),1)
             else: # double array because of type conv
                 ltemp=np.concatenate((ltemp,np.array(np.array(lret)[:,i,None],dtype='float64').round(2)),1)
@@ -267,6 +262,33 @@ def compare(l1,l2,test=False):
             if k%7==0 and k!=0:
                 print()
             k+=1
+    else:
+        return lret
+    
+def filter_me(l,_def=-1,res=-1,arm=-1,test=False):
+    lret=[]
+    for i in range(len(lc)):
+        if (l[i][0]==_def or _def==-1) and (l[i][1]==res or res==-1) and (l[i][2]==arm or arm==-1):
+            lret.append(l[i])
+    if test==True:
+        ltest=[["def","res","arm"]]
+        ltest[0].extend(int((len(l[0])-3)/3)*["unit","dmg","eff"])
+        ltemp=np.array([[] for i in range(len(lret))])
+        lstr=np.array([[] for i in range(len(lret))]) # list of all unit names
+        for i in range(len(lret[0])):
+            if type(lret[0][i])==str: # test if rounding is sensible
+                ltemp=np.concatenate((ltemp,np.array(lret)[:,i,None]),1)
+                lstr=np.concatenate((lstr,np.array(lret)[:,i,None]),1)
+            else: # double array because of type conv
+                ltemp=np.concatenate((ltemp,np.array(np.array(lret)[:,i,None],dtype='float64').round(2)),1)
+        ltest.extend(ltemp)
+        dist=0 # distance between unit columns
+        for string in lstr.flatten().tolist():
+            dist=max(dist,len(string))
+        dist+=5
+        string="{: >5} {: >5} {: >5}"+int((len(l[0])-3)/3)*(" {: >%d} {: >5} {: >5}" %dist)
+        for row in ltest:
+            print(string.format(*row))
     else:
         return lret
         
