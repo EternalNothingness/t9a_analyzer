@@ -83,22 +83,30 @@ def show_me(l1):
         print(string.format(*row))
         
 def show_mi(l1):
-    l2=np.array(l1).round(2).tolist()
-    ltest=[['Short','Range',l2[0][0],'']+['','','','']+['','','','']+['','','','']+['','','','']+['Long','Range',l2[-1][0],'']+['','','','']+['','','','']+['','','','']+['','','','']]
-    ltest.append(2*(['Nml','','','']+['Mov','and','Sht','']+['Std','and','Sht','']+['Sof','Cov','','']+['Har','Cov','','']))
-    ltest.append(10*["res","arm","dmg","norm"])
-    for i in range(35):
+    l2=np.array(l1)[:175].round(2).tolist()
+    l3=np.array(l1)[175:].round(2).tolist()
+    ltest=[['','','','']+['','','','']+['','','','']+['','','','']+['','Short','Range',l2[0][0]]]
+    ltest.append(['','','','Normal']+['','Move','and','Shoot']+['','Stand','and','Shoot']+['','','Soft','Cover']+['','','Hard','Cover'])
+    ltest.append(5*["res","arm","dmg","norm"])
+    for i in range(70):
         # ltest.append(l1[0+1]+l1[35+1]+...)
         # ltest.append(l1[1+1]+l1[36+1]+...)
         #...
         # ltest.append(l1[34+1]+l1[69+1]...)
         ltemp=[]
         if i%7 == 0 and i!=0:
-            ltest.append(10*['','','','',''])
-        for j in range(10):
-            ltemp+=l2[i+35*j][1:]
+            ltest.append(5*['','','','',''])
+        if i == 35:
+            ltest.append(['','','','']+['','','','']+['','','','']+['','','','']+['','Long','Range',l3[-1][0]])
+            ltest.append(['','','','Normal']+['','Move','and','Shoot']+['','Stand','and','Shoot']+['','','Soft','Cover']+['','','Hard','Cover'])
+            ltest.append(5*["res","arm","dmg","norm"])
+        for j in range(5):
+            if i<35:
+                ltemp+=l2[i+35*j][1:]
+            else:
+                ltemp+=l3[i-35+35*j][1:]
         ltest.append(ltemp)
-    string=10*"{: >5} {: >4} {: >4} {: >4} "
+    string=5*"{: >7} {: >5} {: >5} {: >5} "
     for row in ltest:
         print(string.format(*row))
 
