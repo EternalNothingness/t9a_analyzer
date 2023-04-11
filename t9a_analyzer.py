@@ -81,11 +81,12 @@ def show_me(l1):
         string=6*"{: >7} {: >5} {: >5} {: >5} {: >5} "
     for row in ltest:
         print(string.format(*row))
-
+        
 def show_mi(l1):
-    l2=c.copy(np.array(l1).round(2).tolist())
-    ltest=[['','','Short','Range','']+['','','Long','Range','']+['','Move','and','Shoot','']+['','Stand','and','Shoot','']+['','','Soft','Cover','']+['','','Hard','Cover','']]
-    ltest.append(6*["aim","res","arm","dmg","norm"])
+    l2=np.array(l1).round(2).tolist()
+    ltest=[['Short','Range',l2[0][0],'']+['','','','']+['','','','']+['','','','']+['','','','']+['Long','Range',l2[-1][0],'']+['','','','']+['','','','']+['','','','']+['','','','']]
+    ltest.append(2*(['Nml','','','']+['Mov','and','Sht','']+['Std','and','Sht','']+['Sof','Cov','','']+['Har','Cov','','']))
+    ltest.append(10*["res","arm","dmg","norm"])
     for i in range(35):
         # ltest.append(l1[0+1]+l1[35+1]+...)
         # ltest.append(l1[1+1]+l1[36+1]+...)
@@ -93,60 +94,13 @@ def show_mi(l1):
         # ltest.append(l1[34+1]+l1[69+1]...)
         ltemp=[]
         if i%7 == 0 and i!=0:
-            ltest.append(6*['','','','',''])
-        for j in range(6):
-            ltemp+=c.copy(l2[i+35*j])
+            ltest.append(10*['','','','',''])
+        for j in range(10):
+            ltemp+=l2[i+35*j][1:]
         ltest.append(ltemp)
-        string=6*"{: >7} {: >5} {: >5} {: >5} {: >5} "
+    string=10*"{: >5} {: >4} {: >4} {: >4} "
     for row in ltest:
         print(string.format(*row))
-
-def missile(att,aim,_str,ap,pt,mw=1,aa=1,acc=False,qtf=False,unw=False,mof=False,sta=False,rel=False,test=False):
-    l2=[]
-    aim_orig=aim
-    if type(att)==list: # extend optional parameters to lists
-        if type(mw)!=list:
-            mw=[mw for i in range(len(att))]
-        if type(aa)!=list:
-            aa=[aa for i in range(len(att))]
-    for sit in range(6):
-        aim=aim_orig
-        # 0 => Short Range, no mod.
-        # Long Range
-        if sit==1 and acc==False:
-            aim+=1
-        # Move and Shoot
-        elif sit==2 and mof==True: # Move or Fire
-            aim=90
-        elif sit==2 and ((qtf==False and unw==False) or (qtf==True and unw==True)): # qick to fire = unwieldy
-            aim+=1
-        elif sit==2 and (qtf==False and unw==True): # unwieldy
-            aim+=2 
-        # Stand and Shoot
-        elif sit==3 and rel==True: # Reload!
-            aim=90
-        elif sit==3 and sta==False:
-            aim+=1
-            # Soft Cover
-        elif sit==4:
-            aim+=1
-        # Hard Cover
-        elif sit==5:
-            aim+=2
-        for res in range(2,7):
-            for arm in range(0,7):
-                dmg=0
-                if type(att)==list:
-                    for i in range(len(att)):
-                        dmg+=att[i]*mw[i]*aa[i]*avgdmg_mi(aim, _str[i], ap[i], res, arm)
-                else:
-                    dmg+=att*mw*aa*avgdmg_mi(aim, _str, ap, res, arm)
-                dmgpt=avgdmgpt(100*dmg,pt)
-                l2.append([aim,res,arm,dmg,dmgpt])
-    if test==True:
-        show_mi(l2)
-    else:
-        return l2
 
 # treat breath as an additional modelpart with 0 attack and auto hits
 def melee(att,off,_str,ap,pt,mw=1,autohits=0,hmod=0,wmod=0,test=False):
@@ -175,7 +129,58 @@ def melee(att,off,_str,ap,pt,mw=1,autohits=0,hmod=0,wmod=0,test=False):
         show_me(l2)
     else:
         return l2
-    
+
+def missile(ran,att,aim,_str,ap,pt,mw=1,aa=1,acc=False,qtf=False,unw=False,mof=False,sta=False,rel=False,test=False):
+    l2=[]   
+    if type(att)==list: # extend optional parameters to lists
+        if type(mw)!=list:
+            mw=[mw for i in range(len(att))]
+        if type(aa)!=list:
+            aa=[aa for i in range(len(att))]
+    aim_orig=aim
+    for i in range(2):
+        aim=aim_orig
+        # i=0 Short Range, i=1 Long Range
+        if i== 1 and acc==False:
+            aim+=1
+        aim_ran=aim
+        for j in range(5):
+            aim=aim_ran
+            # if j==0:
+                # Normal, nothing to do
+            # Move and Shoot
+            if j==1 and mof==True: # Move or Fire
+                aim=90
+            elif j==1 and ((qtf==False and unw==False) or (qtf==True and unw==True)): # qick to fire <=> unwieldy
+                aim+=1
+            elif j==1 and (qtf==False and unw==True): # only unwieldy
+                aim+=2 
+            # Stand and Shoot
+            elif j==2 and rel==True: # Reload!
+                aim=90
+            elif j==2 and sta==False:
+                aim+=1
+            # Soft Cover
+            elif j==3:
+                aim+=1
+            # Hard Cover
+            elif j==4:
+                aim+=2
+            for res in range(2,7):
+                for arm in range(0,7):
+                    dmg=0
+                    if type(att)==list:
+                        for i in range(len(att)):
+                            dmg+=att[i]*mw[i]*aa[i]*avgdmg_mi(aim, _str[i], ap[i], res, arm)
+                    else:
+                        dmg+=att*mw*aa*avgdmg_mi(aim, _str, ap, res, arm)
+                    dmgpt=avgdmgpt(100*dmg,pt)
+                    l2.append([ran/(2-i),res,arm,dmg,dmgpt])
+    if test==True:
+        show_mi(l2)
+    else:
+        return l2
+
 def filter2_me(l,_def=-1,res=-1,arm=-1,test=False):
     lc=c.copy(l)
     lret=[]
@@ -184,6 +189,20 @@ def filter2_me(l,_def=-1,res=-1,arm=-1,test=False):
             lret.append(lc[i])
     if test==True:
         ltest=[["def","res","arm","dmg","norm"]]
+        ltest.extend(np.array(lret).round(2).tolist())
+        for row in ltest:
+            print("{: >5} {: >5} {: >5} {: >5} {: >5}".format(*row))
+    else:
+        return lret
+    
+def filter2_mi(l,ran=-1,res=-1,arm=-1,test=False):
+    lc=c.copy(l)
+    lret=[]
+    for i in range(len(lc)):
+        if (lc[i][0]>=ran or ran==-1) and (lc[i][1]==res or res==-1) and (lc[i][2]==arm or arm==-1):
+            lret.append(lc[i])
+    if test==True:
+        ltest=[["ran","res","arm","dmg","norm"]]
         ltest.extend(np.array(lret).round(2).tolist())
         for row in ltest:
             print("{: >5} {: >5} {: >5} {: >5} {: >5}".format(*row))
@@ -310,14 +329,14 @@ def wr_he():
     # Ellein Reavers
     wf("er_me_chg",melee([5,5], [4,3], [4,3], [1,0], 180, hmod=[1,0]))
     wf("er_me",melee([5,5], [4,3], [3,3], [0,0], 180, hmod=[1,0]))
-    wf("er_mi",missile(5,3,3,0,180))
+    wf("er_mi",missile(24,5,3,3,0,180))
     # Citizen Archers
     wf("ca_me",melee(10, 4, 3, 0, 150, hmod=1))
-    wf("ca_mi",missile(10, 3, 3, 0, 150,acc=True))
+    wf("ca_mi",missile(30,10, 3, 3, 0, 150,acc=True))
     # Seaguard
     wf("sg_me_chd",melee(15, 4, 3, 2, 240, hmod=1))
     wf("sg_me",melee(15, 4, 3, 1, 240, hmod=1))
-    wf("sg_mi",missile(15, 3, 3, 0, 240,sta=True))
+    wf("sg_mi",missile(24,15, 3, 3, 0, 240,sta=True))
     
     # Special
     # Sword Masters
@@ -333,7 +352,7 @@ def wr_he():
     # Reaver Chariots
     wf("rc_me_chg",melee([2,2,0], [4,3,0], [4,3,5], [1,0,2], 110, autohits=[0,0,3.5], hmod=[1,0,0]))
     wf("rc_me",melee([2,2,0], [4,3,0], [3,3,5], [0,0,2], 110, hmod=[1,0,0]))
-    wf("rc_mi",missile(2, 3, 3, 0, 90))
+    wf("rc_mi",missile(30,2, 3, 3, 0, 90))
     # Lion Chariot
     wf("lc_chg_mw",melee([2,4,0], [5,5,0], [6,5,5], [3,2,2], 195, mw=[2,1,1], autohits=[0,0,4.5]))
     wf("lc_chg",melee([2,4,0], [5,5,0], [6,5,5], [3,2,2], 195, autohits=[0,0,4.5]))
@@ -359,24 +378,24 @@ def wr_he():
     wf("iotfh",melee([1,4], [4,5], [3,5], [0,2], 330, hmod=[1,0]))
     # Sea Guard Reaper
     wf("sgr_me",melee(2, 4, 3, 0, 190,hmod=1))
-    wf("sgr_mi_1_1",missile(1, 3, 6, 10, 190,mw=2,mof=True,rel=True))
-    wf("sgr_mi_1_5",missile([1,1], 3, [3,6], [10,10], 190,mw=[1,1],aa=[4,1],mof=True,rel=True)) # mw=1 is more realistic
-    wf("sgr_mi_6",missile(6, 3, 4, 2, 190,mof=True,rel=True))
+    wf("sgr_mi_1_1",missile(48,1, 3, 6, 10, 190,mw=2,mof=True,rel=True))
+    wf("sgr_mi_1_5",missile(48,[1,1], 3, [3,6], [10,10], 190,mw=[1,1],aa=[4,1],mof=True,rel=True)) # mw=1 is more realistic
+    wf("sgr_mi_6",missile(48,6, 3, 4, 2, 190,mof=True,rel=True))
     # Sky Sloop
     wf("ss_me_chg",melee([2,2,0],[4,4,0],[4,4,5],[1,1,2],225,autohits=[0,0,3.5],hmod=[1,0,0]))
     wf("ss_me",melee([2,2,0],[4,4,0],[3,4,5],[0,1,2],225,hmod=[1,0,0]))
-    wf("ss_mi",missile(4,3,5,3,225,qtf=True,rel=True))
+    wf("ss_mi",missile(24,4,3,5,3,225,qtf=True,rel=True))
     
     # Queen's Bows
     # Queen's Guard
     wf("qg_me",melee(5, 5, 3, 0, 135,hmod=1))
     wf("qg_me_s_chd",melee(5, 5, 3, 2, 140,hmod=1))
     wf("qg_me_s",melee(5, 5, 3, 1, 140,hmod=1))
-    wf("qg_mi",missile(5, 2, 4, 1, 135))
+    wf("qg_mi",missile(30,5, 2, 4, 1, 135))
     # Grey Watchers
     wf("gw_me",melee(5, 4, 3, 0, 135))
     wf("gw_me_pw",melee(10, 4, 3, 0, 140))
-    wf("gw_mi",missile(5, 2, 3, 0, 135,acc=True))
+    wf("gw_mi",missile(30,5, 2, 3, 0, 135,acc=True))
  
 if __name__ == "__main__":
     wr_he()
