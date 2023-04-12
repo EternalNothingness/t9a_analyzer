@@ -234,7 +234,7 @@ def compare2_mi(l1,l2,test=False):
         if ranint.count(i)>1: # remove redunant numbers
             ranint.remove(i)
     #print(ranint)
-    aret=np.array([0 for i in range(5)])[None,:]
+    aret=np.array([0 for i in range(5)])[None,:] # placeholder
     for i in ranint: # range intervals
         if l1[0][0]>=i: # Short Range
             if l2[0][0]>=i: # Short Range
@@ -258,37 +258,29 @@ def compare2_mi(l1,l2,test=False):
             else: # Not in Range
                 atemp=np.concatenate(([[i] for j in range(int(len(l1)/2))],np.array(l1)[:int(len(l1)/2),1:3],np.array([[0,0] for i in range(int(len(l1)/2))])/np.array([[0,0] for i in range(int(len(l1)/2))])),1)
         aret=np.concatenate((aret,atemp))
-    lret = aret.tolist()[1:]
+    lret = aret.tolist()[1:] # remove placeholder
     if test==True:
-        show_mi(lret)
-        '''
-        l2=np.array(l1)[:int(len(l1)/2)].round(2).tolist()
-        l3=np.array(l1)[int(len(l1)/2):].round(2).tolist()
-        ltest=[['','','','']+['','','','']+['','','','']+['','','','']+['','Short','Range',l2[0][0]]]
+        #l2=np.array(lret)[:int(len(l1)/len(ranint))].round(2).tolist()
+        #l3=np.array(lret)[int(len(l1)/2):].round(2).tolist()
+        ltest=[['','','','']+['','','','']+['','','','']+['','','','']+['Range','0','-',ranint[0]]]
         ltest.append(['','','','Normal']+['','Move','and','Shoot']+['','Stand','and','Shoot']+['','','Soft','Cover']+['','','Hard','Cover'])
         ltest.append(5*["res","arm","dmg","norm"])
-        for i in range(int(len(l1)/5)):
-            # ltest.append(l1[0+1]+l1[35+1]+...)
-            # ltest.append(l1[1+1]+l1[36+1]+...)
-            #...
-            # ltest.append(l1[34+1]+l1[69+1]...)
-            ltemp=[]
-            if i%7 == 0 and i!=0:
-                ltest.append(5*['','','','',''])
-            if i == int(len(l1)/10):
-                ltest.append(['','','','']+['','','','']+['','','','']+['','','','']+['','Long','Range',l3[-1][0]])
-                ltest.append(['','','','Normal']+['','Move','and','Shoot']+['','Stand','and','Shoot']+['','','Soft','Cover']+['','','Hard','Cover'])
-                ltest.append(5*["res","arm","dmg","norm"])
-            for j in range(5):
-                if i<int(len(l1)/10):
-                    ltemp+=l2[i+int(len(l1)/10)*j][1:]
-                else:
-                    ltemp+=l3[i-int(len(l1)/10)+int(len(l1)/10)*j][1:]
-            ltest.append(ltemp)
+        for k in range(len(ranint)):
+            lround=np.array(lret)[k*int(len(lret)/len(ranint)):(k+1)*int(len(lret)/len(ranint))].round(2).tolist()
+            for i in range(int(len(lret)/len(ranint)/5)):
+                ltemp=[]
+                if i%7 == 0 and (i!=0 or k!=0):
+                    ltest.append(5*['','','','',''])
+                if int(i%(len(lret)/len(ranint)))==0 and k!=0:
+                    ltest.append(['','','','']+['','','','']+['','','','']+['','','','']+['Range',ranint[k-1],'-',ranint[k]])
+                    ltest.append(['','','','Normal']+['','Move','and','Shoot']+['','Stand','and','Shoot']+['','','Soft','Cover']+['','','Hard','Cover'])
+                    ltest.append(5*["res","arm","dmg","norm"])
+                for j in range(5):
+                    ltemp+=lround[i+int(len(l1)/10)*j][1:]
+                ltest.append(ltemp)
         string=5*"{: >7} {: >5} {: >5} {: >5} "
         for row in ltest:
             print(string.format(*row))
-        '''
     else:
         return lret
     
