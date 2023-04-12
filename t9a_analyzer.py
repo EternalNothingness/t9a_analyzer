@@ -84,24 +84,23 @@ def show_me(l1):
        
 def show_mi(lret):
     ranint=[]
-    for i in range(0,len(lret),175):
+    for i in range(0,len(lret),175): # 7 (different arm val) * 5 (different res val) * 5 (different sit) = 175 rows per range interval
         ranint.append(lret[i][0])
     ltest=[['','','','']+['','','','']+['','','','']+['','','','']+['Range','0','-',ranint[0]]]
     ltest.append(['','','','Normal']+['','Move','and','Shoot']+['','Stand','and','Shoot']+['','','Soft','Cover']+['','','Hard','Cover'])
     ltest.append(5*["res","arm","dmg","norm"])
-    for k in range(len(ranint)):
-        # get block of data in same range
-        lround=np.array(lret)[k*int(len(lret)/len(ranint)):(k+1)*int(len(lret)/len(ranint))].round(2).tolist()
-        for i in range(int(len(lret)/len(ranint)/5)):
+    for k in range(len(ranint)): # k different range blocks
+        lround=np.array(lret)[k*175:(k+1)*175].round(2).tolist()
+        for i in range(int(175/5)): # 5 columns
             ltemp=[]
-            if i%7 == 0 and (i!=0 or k!=0):
+            if i%7 == 0 and (i!=0 or k!=0): # insert empty row
                 ltest.append(5*['','','','',''])
-            if int(i%(len(lret)/len(ranint)))==0 and k!=0:
+            if int(i%175)==0 and k!=0: # new ranged interval
                 ltest.append(['','','','']+['','','','']+['','','','']+['','','','']+['Range',ranint[k-1],'-',ranint[k]])
                 ltest.append(['','','','Normal']+['','Move','and','Shoot']+['','Stand','and','Shoot']+['','','Soft','Cover']+['','','Hard','Cover'])
                 ltest.append(5*["res","arm","dmg","norm"])
-            for j in range(5):
-                ltemp+=lround[i+int(len(lround)/5)*j][1:]
+            for j in range(5): # add row to columns
+                ltemp+=lround[i+int(175/5)*j][1:] # one column contains 175/5=35 rows
             ltest.append(ltemp)
     string=5*"{: >7} {: >5} {: >5} {: >5} "
     for row in ltest:
@@ -230,7 +229,6 @@ def compare2_mi(l1,l2,test=False):
     for i in ranint:
         if ranint.count(i)>1: # remove redunant numbers
             ranint.remove(i)
-    #print(ranint)
     aret=np.array([0 for i in range(5)])[None,:] # placeholder
     for i in ranint: # range intervals
         if l1[0][0]>=i: # Short Range
