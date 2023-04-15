@@ -134,7 +134,7 @@ def melee(att,off,_str,ap,pt,mw=1,autohits=0,hmod=0,wmod=0,test=False):
     else:
         return l2
 
-def missile(ran,att,aim,_str,ap,pt,mw=1,aa=1,acc=False,qtf=False,unw=False,mof=False,sta=False,rel=False,test=False):
+def missile(ran,att,aim,_str,ap,pt,mw=1,aa=1,acc=False,qtf=False,unw=False,mof=False,sta=False,rel=False,cannon=False,test=False):
     l2=[]   
     if type(att)==list: # extend optional parameters to lists
         if type(mw)!=list:
@@ -165,10 +165,10 @@ def missile(ran,att,aim,_str,ap,pt,mw=1,aa=1,acc=False,qtf=False,unw=False,mof=F
             elif j==2 and sta==False:
                 aim+=1
             # Soft Cover
-            elif j==3:
+            elif j==3 and cannon==False:
                 aim+=1
             # Hard Cover
-            elif j==4:
+            elif j==4 and cannon==False:
                 aim+=2
             for res in range(2,7):
                 for arm in range(0,7):
@@ -309,6 +309,89 @@ def compare_me(l1,l2,test=False):
             k+=1
     else:
         return lret
+
+def compare_mi(l1,l2,test=False):
+    aval=np.array(l1)
+    #admgnorm=aval[:,:,3:] # get dmg and norm from all units: [[[dmg00,norm01],...,[dmg0x,norm0x]],[[dmg10,norm10],...,[dmg1x,norm1x]],...]
+    aranint=aval[:,:,0] # get ranges from all units: [[sr0,sr0,...,lr0],[sr1,...,lr1],...[srm,...lrm]]
+    lranint=np.unique(np.concatenate((np.sort(aranint.min(1)),np.sort(aranint.max(1))))).tolist() # sorted ranges
+    #aval2=np.concatenate((aranint[:,:,None], admgnorm),2)
+    lret=[]
+    for ran in lranint:
+        #anorm=np.array([[] for i in range(175)])
+        anorm=np.array([[[],[]] for i in range(175)])
+        for unit in range(len(l1)):
+            if aranint[unit,0]>= ran: # Short Range
+                anorm=np.concatenate((anorm, aval[unit,:175,3:,None]),2)
+            elif aranint[unit,-1]>=ran: # Long Range
+                anorm=np.concatenate((anorm, aval[unit,175:,3:,None]),2)
+            else: # Out of Range
+                anorm=np.concatenate((anorm, [[[0],[0]] for i in range(175)]),2)
+        order=anorm[:,1].argsort()
+        order3=np.array([[] for i in range(175)])
+        for i in range(len(l1)): # len(l1)=number of units
+            order3=np.concatenate((order3, order[:,i,None], order[:,i,None],order[:,i,None]),1)
+        order3=order3[:,::-1].tolist() # reverse order (best unit first)
+        lran=np.concatenate(([[ran] for i in range(175)],np.array(l1)[0,:175,1:3],np.array(order3)),1).tolist()
+        for i in range(len(lran)): # row i
+            for j in range(len(l1)): # len(l1)=number of units
+                lran[i][3+3*j]=l2[int(order3[i][3*j])] # unit name
+                lran[i][3+3*j+1]=anorm[i,0,int(order3[i][3*j+1])] # dmg
+                lran[i][3+3*j+2]=anorm[i,1,int(order3[i][3*j+2])]/anorm[i,1,int(order3[i][3*0+2])] # determine cost effectiveness
+        lret+=lran
+    if test==True:
+        ltemp=np.array([[] for i in range(len(lret))])
+        for i in range(len(lret[0])):
+            if type(lret[0][i])==str: # test if rounding is sensible
+                ltemp=np.concatenate((ltemp,np.array(lret)[:,i,None]),1)
+            else: # double array because of type conv
+                ltemp=np.concatenate((ltemp,np.array(np.array(lret)[:,i,None],dtype='float64').round(2)),1)
+        # Header
+        #ltest=[['','']+(len(l1)-1)*['','','']+['0','-',lranint[0]]]
+        #ltest.append(['','','','Normal']+['','Move','and','Shoot']+['','Stand','and','Shoot']+['','','Soft','Cover']+['','','Hard','Cover'])
+        #ltest.append(5*["res","arm","dmg","norm"])
+        
+        ltest=[["ran","res","arm"]]
+        ltest[0].extend(len(l1)*["unit","dmg","eff"])
+        ltest.extend(ltemp) 
+        dist=0 # distance between unit columns
+        for string in l2:
+            dist=max(dist,len(string))
+        dist+=5
+        string="{: >5} {: >5} {: >5}"+len(l1)*(" {: >%d} {: >5} {: >5}" %dist)
+        k=0
+        for row in ltest:
+            print(string.format(*row))
+            if k%7==0 and k!=0:
+                print()
+            k+=1
+    else:
+        return lret
+    
+'''def show_mi(lret):
+    ranint=[]
+    for i in range(0,len(lret),175): # 7 (different arm val) * 5 (different res val) * 5 (different sit) = 175 rows per range interval
+        ranint.append(lret[i][0])
+    ltest=[['','','','']+['','','','']+['','','','']+['','','','']+['Range','0','-',ranint[0]]]
+    ltest.append(['','','','Normal']+['','Move','and','Shoot']+['','Stand','and','Shoot']+['','','Soft','Cover']+['','','Hard','Cover'])
+    ltest.append(5*["res","arm","dmg","norm"])
+    for k in range(len(ranint)): # k different range blocks
+        lround=np.array(lret)[k*175:(k+1)*175].round(2).tolist()
+        for i in range(int(175/5)): # 5 columns
+            ltemp=[]
+            if i%7 == 0 and (i!=0 or k!=0): # insert empty row
+                ltest.append(5*['','','','',''])
+            if int(i%175)==0 and k!=0: # new ranged interval
+                ltest.append(['','','','']+['','','','']+['','','','']+['','','','']+['Range',ranint[k-1],'-',ranint[k]])
+                ltest.append(['','','','Normal']+['','Move','and','Shoot']+['','Stand','and','Shoot']+['','','Soft','Cover']+['','','Hard','Cover'])
+                ltest.append(5*["res","arm","dmg","norm"])
+            for j in range(5): # add row to columns
+                ltemp+=lround[i+int(175/5)*j][1:] # one column contains 175/5=35 rows
+            ltest.append(ltemp)
+    string=5*"{: >7} {: >5} {: >5} {: >5} "
+    for row in ltest:
+        print(string.format(*row))
+'''
     
 def filter_me(l,_def=-1,res=-1,arm=-1,test=False):
     lret=[]
