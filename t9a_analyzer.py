@@ -312,10 +312,8 @@ def compare_me(l1,l2,test=False):
 
 def compare_mi(l1,l2,test=False):
     aval=np.array(l1)
-    #admgnorm=aval[:,:,3:] # get dmg and norm from all units: [[[dmg00,norm01],...,[dmg0x,norm0x]],[[dmg10,norm10],...,[dmg1x,norm1x]],...]
     aranint=aval[:,:,0] # get ranges from all units: [[sr0,sr0,...,lr0],[sr1,...,lr1],...[srm,...lrm]]
     lranint=np.unique(np.concatenate((np.sort(aranint.min(1)),np.sort(aranint.max(1))))).tolist() # sorted ranges
-    #aval2=np.concatenate((aranint[:,:,None], admgnorm),2)
     lret=[]
     for ran in lranint:
         #anorm=np.array([[] for i in range(175)])
@@ -382,7 +380,7 @@ def compare_mi(l1,l2,test=False):
     
 def filter_me(l,_def=-1,res=-1,arm=-1,test=False):
     lret=[]
-    for i in range(len(lc)):
+    for i in range(len(l)):
         if (l[i][0]==_def or _def==-1) and (l[i][1]==res or res==-1) and (l[i][2]==arm or arm==-1):
             lret.append(l[i])
     if test==True:
@@ -407,8 +405,58 @@ def filter_me(l,_def=-1,res=-1,arm=-1,test=False):
     else:
         return lret
         
-def filter_mi(l,ran=-1,res=-1,arm=-1,test=False):
-    pass
+def filter_mi(l,res=-1,arm=-1,test=False):
+    lranint=[]
+    for i in range(0,len(l),175): # 7 (different arm val) * 5 (different res val) * 5 (different sit) = 175 rows per range interval
+        lranint.append(l[i][0])
+    lret=[]
+    for i in range(len(l)):
+        if (l[i][1]==res or res==-1) and (l[i][2]==arm or arm==-1):
+            lret.append(l[i])
+    if test==True:
+        ltemp=np.array([[] for i in range(len(lret))])
+        lstr=np.array([[] for i in range(len(lret))]) # list of all unit names
+        for i in range(len(lret[0])):
+            if type(lret[0][i])==str: # test if rounding is sensible
+                ltemp=np.concatenate((ltemp,np.array(lret)[:,i,None]),1)
+                lstr=np.concatenate((lstr,np.array(lret)[:,i,None]),1)
+            else: # double array because of type conv
+                ltemp=np.concatenate((ltemp,np.array(np.array(lret)[:,i,None],dtype='float64').round(2)),1)
+        # Header
+        #ltest=[]
+        nu=int((len(l[0])-3)/3) # number of units
+        lenran=int(len(lret)/len(lranint)) # length of range blocks 
+        ltest=[['','']+(nu-1)*['','','']+['0','-',lranint[0]]]
+        ltest.append(['','']+(nu-1)*['','','']+['','','Normal'])
+        ltest.append(["res","arm"]+nu*["unit","dmg","eff"])
+        for k in range(len(lranint)):
+            #lran2=lret[k*175:(k+1)*175]
+            for i in range(lenran):
+                if i%(lenran/5) == 0 and (i!=0 or k!=0): # lenran/5: number of rows per situation
+                    ltest.append(['','']+nu*['','',''])
+                    if i/(lenran/5)==1:
+                        ltest.append(['','']+(nu-1)*['','','']+['Move','and','Shoot'])
+                    elif i/(lenran/5)==2:
+                        ltest.append(['','']+(nu-1)*['','','']+['Stand','and','Shoot'])
+                    elif i/(lenran/5)==3:
+                        ltest.append(['','']+(nu-1)*['','','']+['','Soft','Cover'])
+                    elif i/(lenran/5)==4:
+                        ltest.append(['','']+(nu-1)*['','','']+['','Hard','Cover'])
+                if i==0 and k!=0: # new ranged interval
+                    ltest.append(['','']+nu*['','',''])
+                    ltest.append(['','']+(nu-1)*['','','']+[lranint[k-1],'-',lranint[k]])
+                    ltest.append(['','']+(nu-1)*['','','']+['','','Normal'])
+                    #ltest.append(["res","arm"]+len(l1)*["unit","dmg","eff"])
+                ltest.append(np.array(ltemp[i+k*lenran])[1:].tolist())
+        dist=0 # distance between unit columns
+        for string in lstr.flatten().tolist():
+            dist=max(dist,len(string))
+        dist+=5
+        string="{: >5} {: >5}"+nu*(" {: >%d} {: >5} {: >5}" %dist)
+        for row in ltest:
+            print(string.format(*row))
+    else:
+        return lret
 
 wf=lambda fname,l: np.savetxt("./data/"+fname+".txt",np.array(l))
 lf=lambda fname: np.loadtxt("./data/"+fname+".txt").tolist()
