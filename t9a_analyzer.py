@@ -347,51 +347,38 @@ def compare_mi(l1,l2,test=False):
             else: # double array because of type conv
                 ltemp=np.concatenate((ltemp,np.array(np.array(lret)[:,i,None],dtype='float64').round(2)),1)
         # Header
-        #ltest=[['','']+(len(l1)-1)*['','','']+['0','-',lranint[0]]]
-        #ltest.append(['','','','Normal']+['','Move','and','Shoot']+['','Stand','and','Shoot']+['','','Soft','Cover']+['','','Hard','Cover'])
-        #ltest.append(5*["res","arm","dmg","norm"])
-        
-        ltest=[["ran","res","arm"]]
-        ltest[0].extend(len(l1)*["unit","dmg","eff"])
-        ltest.extend(ltemp) 
+        #ltest=[]
+        ltest=[['','']+(len(l1)-1)*['','','']+['0','-',lranint[0]]]
+        ltest.append(['','']+(len(l1)-1)*['','','']+['','','Normal'])
+        ltest.append(["res","arm"]+len(l1)*["unit","dmg","eff"])
+        for k in range(len(lranint)):
+            #lran2=lret[k*175:(k+1)*175]
+            for i in range(175):
+                if i%7 == 0 and (i!=0 or k!=0): # insert empty row
+                    ltest.append(['','']+len(l1)*['','',''])
+                if i%35== 0 and (i!=0 or k!=0):
+                    if i==35:
+                        ltest.append(['','']+(len(l1)-1)*['','','']+['Move','and','Shoot'])
+                    elif i==70:
+                        ltest.append(['','']+(len(l1)-1)*['','','']+['Stand','and','Shoot'])
+                    elif i==105:
+                        ltest.append(['','']+(len(l1)-1)*['','','']+['','Soft','Cover'])
+                    elif i==140:
+                        ltest.append(['','']+(len(l1)-1)*['','','']+['','Hard','Cover'])
+                if i==0 and k!=0: # new ranged interval
+                    ltest.append(['','']+(len(l1)-1)*['','','']+[lranint[k-1],'-',lranint[k]])
+                    ltest.append(['','']+(len(l1)-1)*['','','']+['','','Normal'])
+                    #ltest.append(["res","arm"]+len(l1)*["unit","dmg","eff"])
+                ltest.append(np.array(ltemp[i+k*175])[1:].tolist())
         dist=0 # distance between unit columns
         for string in l2:
             dist=max(dist,len(string))
         dist+=5
-        string="{: >5} {: >5} {: >5}"+len(l1)*(" {: >%d} {: >5} {: >5}" %dist)
-        k=0
+        string="{: >5} {: >5}"+len(l1)*(" {: >%d} {: >5} {: >5}" %dist)
         for row in ltest:
             print(string.format(*row))
-            if k%7==0 and k!=0:
-                print()
-            k+=1
     else:
         return lret
-    
-'''def show_mi(lret):
-    ranint=[]
-    for i in range(0,len(lret),175): # 7 (different arm val) * 5 (different res val) * 5 (different sit) = 175 rows per range interval
-        ranint.append(lret[i][0])
-    ltest=[['','','','']+['','','','']+['','','','']+['','','','']+['Range','0','-',ranint[0]]]
-    ltest.append(['','','','Normal']+['','Move','and','Shoot']+['','Stand','and','Shoot']+['','','Soft','Cover']+['','','Hard','Cover'])
-    ltest.append(5*["res","arm","dmg","norm"])
-    for k in range(len(ranint)): # k different range blocks
-        lround=np.array(lret)[k*175:(k+1)*175].round(2).tolist()
-        for i in range(int(175/5)): # 5 columns
-            ltemp=[]
-            if i%7 == 0 and (i!=0 or k!=0): # insert empty row
-                ltest.append(5*['','','','',''])
-            if int(i%175)==0 and k!=0: # new ranged interval
-                ltest.append(['','','','']+['','','','']+['','','','']+['','','','']+['Range',ranint[k-1],'-',ranint[k]])
-                ltest.append(['','','','Normal']+['','Move','and','Shoot']+['','Stand','and','Shoot']+['','','Soft','Cover']+['','','Hard','Cover'])
-                ltest.append(5*["res","arm","dmg","norm"])
-            for j in range(5): # add row to columns
-                ltemp+=lround[i+int(175/5)*j][1:] # one column contains 175/5=35 rows
-            ltest.append(ltemp)
-    string=5*"{: >7} {: >5} {: >5} {: >5} "
-    for row in ltest:
-        print(string.format(*row))
-'''
     
 def filter_me(l,_def=-1,res=-1,arm=-1,test=False):
     lret=[]
@@ -420,6 +407,9 @@ def filter_me(l,_def=-1,res=-1,arm=-1,test=False):
     else:
         return lret
         
+def filter_mi(l,ran=-1,res=-1,arm=-1,test=False):
+    pass
+
 wf=lambda fname,l: np.savetxt("./data/"+fname+".txt",np.array(l))
 lf=lambda fname: np.loadtxt("./data/"+fname+".txt").tolist()
 
