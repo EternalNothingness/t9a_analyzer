@@ -81,6 +81,24 @@ def show_me(l1):
         string=6*"{: >7} {: >5} {: >5} {: >5} {: >5} "
     for row in ltest:
         print(string.format(*row))
+        
+def show_surv_me(l1):
+    l2=c.copy(np.array(l1).round(2).tolist())
+    ltest=c.copy([6*["off","str","ap","att","norm"]])
+    for i in range(35):
+        # ltest.append(l1[0+1]+l1[35+1]+...)
+        # ltest.append(l1[1+1]+l1[36+1]+...)
+        #...
+        # ltest.append(l1[34+1]+l1[69+1]...)
+        ltemp=[]
+        if i%7 == 0 and i!=0:
+            ltest.append(6*['','','','',''])
+        for j in range(6):
+            ltemp+=c.copy(l2[i+35*j])
+        ltest.append(ltemp)
+        string=6*"{: >7} {: >5} {: >5} {: >6} {: >5} "
+    for row in ltest:
+        print(string.format(*row))
        
 def show_mi(lret):
     ranint=[]
@@ -103,6 +121,31 @@ def show_mi(lret):
                 ltemp+=lround[i+int(175/5)*j][1:] # one column contains 175/5=35 rows
             ltest.append(ltemp)
     string=5*"{: >7} {: >5} {: >5} {: >5} "
+    for row in ltest:
+        print(string.format(*row))
+        
+def show_surv_mi(l1):
+    #l2=c.copy(np.array(l1).round(2).tolist())
+    ltest=[5*["","","","",""]+['','','Aim','Mod','0']]
+    ltest.append(6*["aim","str","ap","att","norm"])
+    for k in range(0,3): # aim modifiers
+        lround=np.array(l1)[k*210:(k+1)*210].round(2).tolist()
+        for i in range(35):
+            # ltest.append(l1[0+1]+l1[35+1]+...)
+            # ltest.append(l1[1+1]+l1[36+1]+...)
+            #...
+            # ltest.append(l1[34+1]+l1[69+1]...)
+            ltemp=[]
+            if i%7 == 0 and i!=0:
+                ltest.append(6*['','','','',''])
+            for j in range(6):
+                ltemp+=lround[i+35*j][1:]
+            ltest.append(ltemp)
+        if k!=2:
+            ltest.append(6*['','','','',''])
+            ltest.append(5*["","","","",""]+['','','Aim','Mod',-l1[(k+1)*210][0]])
+        
+    string=6*"{: >7} {: >5} {: >5} {: >6} {: >5} "
     for row in ltest:
         print(string.format(*row))
 
@@ -133,7 +176,20 @@ def melee(att,off,_str,ap,pt,mw=1,autohits=0,hmod=0,wmod=0,test=False):
         show_me(l2)
     else:
         return l2
-
+    
+def surv_me(hp,_def,res,arm,pt,aeg=7,reg=7,test=False):
+    lret=[]
+    for off in range(2,8):
+        for _str in range(2,7):
+            for ap in range(0,7):
+                att=hp/((1-(7-min(aeg,reg))/6)*avgdmg_me(off,_str,ap,_def,res,arm))
+                attpt=10*att/pt
+                lret.append([off,_str,ap,att,attpt])
+    if test==True:
+        show_surv_me(lret)
+    else:
+        return lret
+    
 def missile(ran,att,aim,_str,ap,pt,mw=1,aa=1,acc=False,qtf=False,unw=False,mof=False,sta=False,rel=False,cannon=False,test=False):
     l2=[]   
     if type(att)==list: # extend optional parameters to lists
@@ -185,6 +241,20 @@ def missile(ran,att,aim,_str,ap,pt,mw=1,aa=1,acc=False,qtf=False,unw=False,mof=F
     else:
         return l2
 
+def surv_mi(hp,res,arm,pt,aeg=7,reg=7,test=False):
+    lret=[]
+    for aimmod in range(0,3):
+        for aim in range(0,6)[::-1]:
+            for _str in range(2,7):
+                for ap in range(0,7):
+                    att=hp/((1-(7-min(aeg,reg))/6)*avgdmg_mi(aim+aimmod, _str, ap, res, arm))
+                    attpt=10*att/pt
+                    lret.append([aimmod,aim,_str,ap,att,attpt])
+    if test==True:
+        show_surv_mi(lret)
+    else:
+        return lret
+    
 def filter2_me(l,_def=-1,res=-1,arm=-1,test=False):
     lc=c.copy(l)
     lret=[]
@@ -320,13 +390,13 @@ def compare_mi(l1,l2,test=False):
         anorm=np.array([[[],[]] for i in range(175)])
         for unit in range(len(l1)):
             if aranint[unit,0]>= ran: # Short Range
-                anorm=np.concatenate((anorm, aval[unit,:175,3:,None]),2)
+                anorm=np.concatenate((anorm, aval[unit,:175,3:,None]),2) # dmg+norm from Short Range
             elif aranint[unit,-1]>=ran: # Long Range
-                anorm=np.concatenate((anorm, aval[unit,175:,3:,None]),2)
+                anorm=np.concatenate((anorm, aval[unit,175:,3:,None]),2) # dmg+norm from Long Range
             else: # Out of Range
                 anorm=np.concatenate((anorm, [[[0],[0]] for i in range(175)]),2)
-        order=anorm[:,1].argsort()
-        order3=np.array([[] for i in range(175)])
+        order=anorm[:,1].argsort() # order of norm
+        order3=np.array([[] for i in range(175)]) # expand order
         for i in range(len(l1)): # len(l1)=number of units
             order3=np.concatenate((order3, order[:,i,None], order[:,i,None],order[:,i,None]),1)
         order3=order3[:,::-1].tolist() # reverse order (best unit first)
@@ -336,7 +406,7 @@ def compare_mi(l1,l2,test=False):
                 lran[i][3+3*j]=l2[int(order3[i][3*j])] # unit name
                 lran[i][3+3*j+1]=anorm[i,0,int(order3[i][3*j+1])] # dmg
                 lran[i][3+3*j+2]=anorm[i,1,int(order3[i][3*j+2])]/anorm[i,1,int(order3[i][3*0+2])] # determine cost effectiveness
-        lret+=lran
+        lret+=lran # add range block
     if test==True:
         ltemp=np.array([[] for i in range(len(lret))])
         for i in range(len(lret[0])):
