@@ -241,13 +241,13 @@ def missile(ran,att,aim,_str,ap,pt,mw=1,aa=1,acc=False,qtf=False,unw=False,mof=F
     else:
         return l2
 
-def surv_mi(hp,res,arm,pt,aeg=7,reg=7,test=False):
+def surv_mi(hp,res,arm,pt,aeg=7,reg=7,ht=0,test=False):
     lret=[]
     for aimmod in range(0,3):
         for aim in range(0,6)[::-1]:
             for _str in range(2,7):
                 for ap in range(0,7):
-                    att=hp/((1-(7-min(aeg,reg))/6)*avgdmg_mi(aim+aimmod, _str, ap, res, arm))
+                    att=hp/((1-(7-min(aeg,reg))/6)*avgdmg_mi(aim+aimmod+ht, _str, ap, res, arm))
                     attpt=10*att/pt
                     lret.append([aimmod,aim,_str,ap,att,attpt])
     if test==True:
