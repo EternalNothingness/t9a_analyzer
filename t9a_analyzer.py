@@ -380,6 +380,46 @@ def compare_me(l1,l2,test=False):
     else:
         return lret
 
+def compare_surv_me(l1,l2,test=False):
+    lnorm=np.array([[] for i in range(len(l1[0]))])
+    for mat in l1:
+        lnorm=np.concatenate((lnorm,np.array(mat)[:,4,None]),1)
+    order=lnorm.argsort()
+    order3=np.array([[] for i in range(len(l1[0]))])
+    for i in range(len(l1)): # len(l1)=number of units
+        order3=np.concatenate((order3, order[:,i,None], order[:,i,None],order[:,i,None]),1)
+    order3=order3[:,::-1].tolist() # reverse order (best unit first)
+    lret=np.concatenate((np.array(l1)[0,:,:3],np.array(order3)),1).tolist()
+    for i in range(len(lret)):
+        for j in range(len(l1)): # len(l1)=number of units
+            lret[i][3+3*j]=l2[int(order3[i][3*j])]
+            lret[i][3+3*j+1]=l1[int(order3[i][3*j+1])][i][3]
+            lret[i][3+3*j+2]=(np.array(l1[int(order3[i][3*j+2])][i][4])/np.array(l1[int(order3[i][3*0+2])][i][4])).tolist() # determine cost effectiveness
+    if test==True:
+        ltemp=np.array([[] for i in range(len(l1[0]))])
+        for i in range(len(lret[0])):
+            if type(lret[0][i])==str: # test if rounding is sensible
+                ltemp=np.concatenate((ltemp,np.array(lret)[:,i,None]),1)
+            else: # double array because of type conv
+                ltemp=np.concatenate((ltemp,np.array(np.array(lret)[:,i,None],dtype='float64').round(2)),1)
+        
+        ltest=[["off","str","ap"]]
+        ltest[0].extend(len(l1)*["unit","att","eff"])
+        ltest.extend(ltemp)
+        dist=0 # distance between unit columns
+        for string in l2:
+            dist=max(dist,len(string))
+        dist+=5
+        string="{: >5} {: >5} {: >5}"+len(l1)*(" {: >%d} {: >6} {: >5}" %dist)
+        k=0
+        for row in ltest:
+            print(string.format(*row))
+            if k%7==0 and k!=0:
+                print()
+            k+=1
+    else:
+        return lret
+
 def compare_mi(l1,l2,test=False):
     aval=np.array(l1)
     aranint=aval[:,:,0] # get ranges from all units: [[sr0,sr0,...,lr0],[sr1,...,lr1],...[srm,...lrm]]
@@ -470,6 +510,33 @@ def filter_me(l,_def=-1,res=-1,arm=-1,test=False):
             dist=max(dist,len(string))
         dist+=5
         string="{: >5} {: >5} {: >5}"+int((len(l[0])-3)/3)*(" {: >%d} {: >5} {: >5}" %dist)
+        for row in ltest:
+            print(string.format(*row))
+    else:
+        return lret
+    
+def filter_me_surv(l,off=-1,_str=-1,ap=-1,test=False):
+    lret=[]
+    for i in range(len(l)):
+        if (l[i][0]==off or off==-1) and (l[i][1]==_str or _str==-1) and (l[i][2]==ap or ap==-1):
+            lret.append(l[i])
+    if test==True:
+        ltest=[["off","str","ap"]]
+        ltest[0].extend(int((len(l[0])-3)/3)*["unit","att","eff"])
+        ltemp=np.array([[] for i in range(len(lret))])
+        lstr=np.array([[] for i in range(len(lret))]) # list of all unit names
+        for i in range(len(lret[0])):
+            if type(lret[0][i])==str: # test if rounding is sensible
+                ltemp=np.concatenate((ltemp,np.array(lret)[:,i,None]),1)
+                lstr=np.concatenate((lstr,np.array(lret)[:,i,None]),1)
+            else: # double array because of type conv
+                ltemp=np.concatenate((ltemp,np.array(np.array(lret)[:,i,None],dtype='float64').round(2)),1)
+        ltest.extend(ltemp)
+        dist=0 # distance between unit columns
+        for string in lstr.flatten().tolist():
+            dist=max(dist,len(string))
+        dist+=5
+        string="{: >5} {: >5} {: >5}"+int((len(l[0])-3)/3)*(" {: >%d} {: >6} {: >5}" %dist)
         for row in ltest:
             print(string.format(*row))
     else:
