@@ -126,9 +126,9 @@ def show_mi(lret):
         
 def show_surv_mi(l1):
     #l2=c.copy(np.array(l1).round(2).tolist())
-    ltest=[5*["","","","",""]+['','','Aim','Mod','0']]
-    ltest.append(6*["aim","str","ap","att","norm"])
-    for k in range(0,3): # aim modifiers
+    #ltest=[5*["","","","",""]+['','','Aim','Mod','0']]
+    ltest=[6*["aim","str","ap","att","norm"]]
+    for k in range(0,1): # aim modifiers
         lround=np.array(l1)[k*210:(k+1)*210].round(2).tolist()
         for i in range(35):
             # ltest.append(l1[0+1]+l1[35+1]+...)
@@ -139,12 +139,12 @@ def show_surv_mi(l1):
             if i%7 == 0 and i!=0:
                 ltest.append(6*['','','','',''])
             for j in range(6):
-                ltemp+=lround[i+35*j][1:]
+                ltemp+=lround[i+35*j]#[1:]
             ltest.append(ltemp)
-        if k!=2:
+        '''if k!=2:
             ltest.append(6*['','','','',''])
             ltest.append(5*["","","","",""]+['','','Aim','Mod',-l1[(k+1)*210][0]])
-        
+        '''
     string=6*"{: >7} {: >5} {: >5} {: >6} {: >5} "
     for row in ltest:
         print(string.format(*row))
@@ -243,13 +243,13 @@ def missile(ran,att,aim,_str,ap,pt,mw=1,aa=1,acc=False,qtf=False,unw=False,mof=F
 
 def surv_mi(hp,res,arm,pt,aeg=7,reg=7,ht=0,test=False):
     lret=[]
-    for aimmod in range(0,3): # aimmod really neccessary?
-        for aim in range(0,6)[::-1]:
-            for _str in range(2,7):
-                for ap in range(0,7):
-                    att=hp/((1-(7-min(aeg,reg))/6)*avgdmg_mi(aim+aimmod+ht, _str, ap, res, arm))
-                    attpt=10*att/pt
-                    lret.append([aimmod,aim,_str,ap,att,attpt])
+    #for aimmod in range(0,3): # aimmod really neccessary?
+    for aim in range(0,6)[::-1]:
+        for _str in range(2,7):
+            for ap in range(0,7):
+                att=hp/((1-(7-min(aeg,reg))/6)*avgdmg_mi(aim+ht, _str, ap, res, arm))
+                attpt=10*att/pt
+                lret.append([aim,_str,ap,att,attpt])
     if test==True:
         show_surv_mi(lret)
     else:
@@ -487,6 +487,46 @@ def compare_mi(l1,l2,test=False):
             print(string.format(*row))
     else:
         return lret
+
+def compare_surv_mi(l1,l2,test=False):
+    lnorm=np.array([[] for i in range(len(l1[0]))])
+    for mat in l1:
+        lnorm=np.concatenate((lnorm,np.array(mat)[:,4,None]),1)
+    order=lnorm.argsort()
+    order3=np.array([[] for i in range(len(l1[0]))])
+    for i in range(len(l1)): # len(l1)=number of units
+        order3=np.concatenate((order3, order[:,i,None], order[:,i,None],order[:,i,None]),1)
+    order3=order3[:,::-1].tolist() # reverse order (best unit first)
+    lret=np.concatenate((np.array(l1)[0,:,:3],np.array(order3)),1).tolist()
+    for i in range(len(lret)):
+        for j in range(len(l1)): # len(l1)=number of units
+            lret[i][3+3*j]=l2[int(order3[i][3*j])] # unit name
+            lret[i][3+3*j+1]=l1[int(order3[i][3*j+1])][i][3] # dmg
+            lret[i][3+3*j+2]=(np.array(l1[int(order3[i][3*j+2])][i][4])/np.array(l1[int(order3[i][3*0+2])][i][4])).tolist() # determine cost effectiveness
+    if test==True:
+        ltemp=np.array([[] for i in range(len(l1[0]))])
+        for i in range(len(lret[0])):
+            if type(lret[0][i])==str: # test if rounding is sensible
+                ltemp=np.concatenate((ltemp,np.array(lret)[:,i,None]),1)
+            else: # double array because of type conv
+                ltemp=np.concatenate((ltemp,np.array(np.array(lret)[:,i,None],dtype='float64').round(2)),1)
+        
+        ltest=[["aim","str","ap"]]
+        ltest[0].extend(len(l1)*["unit","att","eff"])
+        ltest.extend(ltemp)
+        dist=0 # distance between unit columns
+        for string in l2:
+            dist=max(dist,len(string))
+        dist+=5
+        string="{: >5} {: >5} {: >5}"+len(l1)*(" {: >%d} {: >6} {: >5}" %dist)
+        k=0
+        for row in ltest:
+            print(string.format(*row))
+            if k%7==0 and k!=0:
+                print()
+            k+=1
+    else:
+        return lret
     
 def filter_me(l,_def=-1,res=-1,arm=-1,test=False):
     lret=[]
@@ -590,6 +630,33 @@ def filter_mi(l,res=-1,arm=-1,test=False):
             dist=max(dist,len(string))
         dist+=5
         string="{: >5} {: >5}"+nu*(" {: >%d} {: >5} {: >5}" %dist)
+        for row in ltest:
+            print(string.format(*row))
+    else:
+        return lret
+    
+def filter_mi_surv(l,aim=-1,_str=-1,ap=-1,test=False):
+    lret=[]
+    for i in range(len(l)):
+        if (l[i][0]==aim or aim==-1) and (l[i][1]==_str or _str==-1) and (l[i][2]==ap or ap==-1):
+            lret.append(l[i])
+    if test==True:
+        ltest=[["aim","str","ap"]]
+        ltest[0].extend(int((len(l[0])-3)/3)*["unit","att","eff"])
+        ltemp=np.array([[] for i in range(len(lret))])
+        lstr=np.array([[] for i in range(len(lret))]) # list of all unit names
+        for i in range(len(lret[0])):
+            if type(lret[0][i])==str: # test if rounding is sensible
+                ltemp=np.concatenate((ltemp,np.array(lret)[:,i,None]),1)
+                lstr=np.concatenate((lstr,np.array(lret)[:,i,None]),1)
+            else: # double array because of type conv
+                ltemp=np.concatenate((ltemp,np.array(np.array(lret)[:,i,None],dtype='float64').round(2)),1)
+        ltest.extend(ltemp)
+        dist=0 # distance between unit columns
+        for string in lstr.flatten().tolist():
+            dist=max(dist,len(string))
+        dist+=5
+        string="{: >5} {: >5} {: >5}"+int((len(l[0])-3)/3)*(" {: >%d} {: >6} {: >5}" %dist)
         for row in ltest:
             print(string.format(*row))
     else:
@@ -723,7 +790,7 @@ if __name__ == "__main__":
     lg=lf("lg")
     lg_sv_me=surv_me(10, 5, 3, 3, 220)
     lg_sv_mi=surv_mi(10, 3, 4, 220)
-    lg_sv_mi=surv_mi(10, 3, 4, 220, ht=1)
+    lg_bh_sv_mi=surv_mi(10, 3, 4, 230, ht=1)
     # Flame Wardens
     fw=lf("fw")
     fw_sv_me=surv_me(15, 5, 3, 2, 260,aeg=4)
