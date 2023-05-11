@@ -243,7 +243,7 @@ def missile(ran,att,aim,_str,ap,pt,mw=1,aa=1,acc=False,qtf=False,unw=False,mof=F
 
 def surv_mi(hp,res,arm,pt,aeg=7,reg=7,ht=0,test=False):
     lret=[]
-    for aimmod in range(0,3):
+    for aimmod in range(0,3): # aimmod really neccessary?
         for aim in range(0,6)[::-1]:
             for _str in range(2,7):
                 for ap in range(0,7):
@@ -652,9 +652,9 @@ def wr_he():
     wf("frp_wb",melee([4,2], [5+2,5+2], [5,4], [2,1], 380, hmod=[0,1]))
     #Fire Phoenix
     wf("fip_st",melee([4,0], [5,0], [5,4], [2,1], 365, autohits=[3.5,3.5])) # Gigantic => stomp(d6)
-    wf("fip_wb_st",melee([4,0,2], [5,0,5], [5,4,4], [2,1,1], 365, autohits=[3.5,3.5,0], hmod=[0,0,1])) # Gigantic => stomp(d6)
+    wf("fip_wb_st",melee([4,0,2], [5,0,5], [5,4,4], [2,1,1], 405, autohits=[3.5,3.5,0], hmod=[0,0,1])) # Gigantic => stomp(d6)
     wf("fip",melee([4,0], [5,0], [5,4], [2,1], 365, autohits=[0,3.5]))
-    wf("fip_wb",melee([4,0,2], [5,0,5], [5,4,4], [2,1,1], 365, autohits=[0,3.5,0], hmod=[0,0,1]))
+    wf("fip_wb",melee([4,0,2], [5,0,5], [5,4,4], [2,1,1], 405, autohits=[0,3.5,0], hmod=[0,0,1]))
     # Initiate of the Fiercy Heart
     wf("iotfh_st_br",melee([1,4,0], [4,5,0], [3,5,4], [0,2,1], 330, autohits=[0,1,7], hmod=[1,0,0])) # Large => stomp(1)
     wf("iotfh_br",melee([1,4,0], [4,5,0], [3,5,4], [0,2,1], 330, autohits=[0,0,7], hmod=[1,0,0]))
@@ -688,68 +688,113 @@ if __name__ == "__main__":
     # Citizen Spears
     cs_chd=lf("cs_chd")
     cs=lf("cs")
+    cs_sv_me=surv_me(20, 4, 3, 2, 260)
+    cs_sv_mi=surv_mi(20, 3, 2, 260)
     # Highborn Lancers
     hl_chg=lf("hl_chg")
     hl=lf("hl")
+    hl_sv_me=surv_me(5,4,3,5,210)
+    hl_sv_mi=surv_mi(5,3,5,210)
     # Ellein Reavers
     er_me_chg=lf("er_me_chg")
     er_me=lf("er_me")
     er_mi=lf("er_mi")
+    er_sv_me=surv_me(5, 4, 3, 2, 180)
+    er_sv_mi=surv_mi(5, 3, 2, 180)
     # Citizen Archers
     ca_me=lf("ca_me")
     ca_mi=lf("ca_mi")
+    ca_sv_me=surv_me(10, 4, 3, 1, 150)
+    ca_sv_mi=surv_mi(10, 3, 1, 150)
     # Seaguard
     sg_me_chd=lf("sg_me_chd")
     sg_me=lf("sg_me")
     sg_mi=lf("sg_mi")
+    sg_sv_me=surv_me(15, 5, 3, 2, 240)
+    sg_sv_mi=surv_mi(15, 3, 2, 240)
     
     # Special
     # Sword Masters
     sm=lf("sm")
+    sm_sv_me=surv_me(5, 6, 3, 2, 125)
+    sm_sv_mi=surv_mi(5, 3, 2, 125)
     # Lion Guard
     lg_mw=lf("lg_mw")
     lg=lf("lg")
+    lg_sv_me=surv_me(10, 5, 3, 3, 220)
+    lg_sv_mi=surv_mi(10, 3, 4, 220)
+    lg_sv_mi=surv_mi(10, 3, 4, 220, ht=1)
     # Flame Wardens
     fw=lf("fw")
+    fw_sv_me=surv_me(15, 5, 3, 2, 260,aeg=4)
+    fw_sv_mi=surv_mi(15, 3, 2, 260,aeg=4)
     # Knights of Ryma
     kor_chg=lf("kor_chg")
     kor=lf("kor")
+    kor_sv_me=surv_me(5, 5, 3, 5, 320,aeg=6)
+    kor_f_sv_me=surv_me(5, 5, 3, 5, 320,aeg=3)
+    kor_sv_mi=surv_mi(5, 3, 5, 320,aeg=6)
+    kor_f_sv_mi=surv_mi(5, 3, 5, 320,aeg=3)
     # Reaver Chariots
     rc_me_chg=lf("rc_me_chg")
     rc_me=lf("rc_me")
     rc_mi=lf("rc_mi")
+    rc_sv_me=surv_me(3, 4, 4, 2, 110)
+    rc_sv_mi=surv_mi(3, 4, 2, 110)
     # Lion Chariot
     lc_chg_mw=lf("lc_chg_mw")
     lc_chg=lf("lc_chg")
     lc_mw=lf("lc_mw")
     lc=lf("lc")
+    lc_sv_me=surv_me(4, 5, 4, 4, 195)
+    lc_sv_mi=surv_mi(4, 4, 4, 195)
     # Giant Eagles
     ge_st=lf("ge_st")
     ge=lf("ge")
+    ge_sv_me=surv_me(3,5,4,0,100)
+    ge_sv_mi=surv_mi(3,4,0,100)
     # Frost Phoenix
     frp_st=lf("frp_st")
     frp_wb_st=lf("frp_wb_st")
     frp=lf("frp")
     frp_wb=lf("frp_wb")
+    frp_sv_me=surv_me(5, 7, 5, 3, 340,aeg=5)
+    frp_wb_sv_me=surv_me(5, 7, 5, 3, 380,aeg=5)
+    frp_sv_mi=surv_mi(5, 5, 3, 340,aeg=5)
+    frp_wb_sv_mi=surv_mi(5, 5, 3, 380,aeg=5)
     #Fire Phoenix
     fip_st=lf("fip_st")
     fip_wb_st=lf("fip_wb_st")
     fip=lf("fip")
     fip_wb=lf("fip_wb")
+    fip_sv_me=surv_me(5, 5, 5, 3, 365)
+    fip_f_sv_me=surv_me(5, 5, 5, 3, 365,aeg=3)
+    fip_wb_sv_me=surv_me(5, 5, 5, 3, 405)
+    fip_wb_f_sv_me=surv_me(5, 5, 5, 3, 405,aeg=3)
+    fip_sv_mi=surv_mi(5, 5, 3, 365)
+    fip_f_sv_mi=surv_mi(5, 5, 3, 365,aeg=3)
+    fip_wb_sv_mi=surv_mi(5, 5, 3, 405)
+    fip_wb_f_sv_mi=surv_mi(5, 5, 3, 405,aeg=3)
     # Initiate of the Fiercy Heart
     iotfh_st_br=lf("iotfh_st_br")
     iotfh_br=lf("iotfh_br")
     iotfh_st=lf("iotfh_st")
     iotfh=lf("iotfh")
+    iotfh_sv_me=surv_me(4, 4, 5, 4, 330)
+    iotfh_sv_mi=surv_mi(4, 5, 4, 330)
     # Sea Guard Reaper
     sgr_me=lf("sgr_me")
     sgr_mi_1_1=lf("sgr_mi_1_1")
     sgr_mi_1_5=lf("sgr_mi_1_5")
     sgr_mi_6=lf("sgr_mi_6")
+    sgr_sv_me=surv_me(4, 1, 4, 1, 190)
+    sgr_sv_mi=surv_mi(4, 4, 1, 190)
     # Sky Sloop
     ss_me_chg=lf("ss_me_chg")
     ss_me=lf("ss_me")
     ss_mi=lf("ss_mi")
+    ss_sv_me=surv_me(4, 4, 4, 2, 225)
+    ss_sv_mi=surv_mi(4, 4, 2, 225,ht=1)
     
     # Queen's Bows
     # Queen's Guard
@@ -757,7 +802,11 @@ if __name__ == "__main__":
     qg_me_s_chd=lf("qg_me_s_chd")
     qg_me_s=lf("qg_me_s")
     qg_mi=lf("qg_mi")
+    qg_surv_me=surv_me(5, 5, 3, 1, 135)
+    qg_surv_mi=surv_mi(5, 3, 1, 135)
     # Grey Watchers
     gw_me=lf("gw_me")
     gw_me_pw=lf("gw_me_pw")
     gw_mi=lf("gw_mi")
+    gw_sv_me=surv_me(5, 4, 3, 1, 135)
+    gw_sv_mi=surv_mi(5, 3, 1, 135,ht=1)
