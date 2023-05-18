@@ -165,11 +165,17 @@ def melee(att,off,_str,ap,pt,mw=1,autohits=0,hmod=0,wmod=0,test=False):
         for res in range(2,7):
             for arm in range(0,7):
                 dmg=0
-                if type(att)==list:
+                if type(att)==list: # Multi-part model
                     for i in range(len(att)):
-                        dmg+=att[i]*mw[i]*avgdmg_me(off[i],_str[i],ap[i],_def,res,arm,hmod[i],wmod[i])+avgdmg_autohits(autohits[i], _str[i], ap[i], res, arm,wmod=wmod[i])
+                        #dmg+=att[i]*mw[i]*avgdmg_me(off[i],_str[i],ap[i],_def,res,arm,hmod[i],wmod[i])+avgdmg_autohits(autohits[i], _str[i], ap[i], res, arm,wmod=wmod[i])
+                        hits=att[i]*ptohit(off[i], _def,mod=hmod[i])+autohits[i]
+                        wounds=hits*ptowound(_str[i], res,mod=wmod[i])
+                        dmg+=wounds*mw[i]*n_ptoarm(ap[i], arm)
                 else:
-                    dmg=att*mw*avgdmg_me(off,_str,ap,_def,res,arm,hmod,wmod)+avgdmg_autohits(autohits, _str, ap, res, arm,wmod)
+                    #dmg=att*mw*avgdmg_me(off,_str,ap,_def,res,arm,hmod,wmod)+avgdmg_autohits(autohits, _str, ap, res, arm,wmod)
+                    hits=att*ptohit(off, _def,mod=hmod)+autohits
+                    wounds=hits*ptowound(_str, res,mod=wmod)
+                    dmg=wounds*mw*n_ptoarm(ap, arm)
                 dmgpt=avgdmgpt(100*dmg,pt)
                 l2.append([_def,res,arm,dmg,dmgpt])
     if test==True:
@@ -182,7 +188,12 @@ def surv_me(hp,_def,res,arm,pt,aeg=7,reg=7,test=False):
     for off in range(2,8):
         for _str in range(2,7):
             for ap in range(0,7):
-                att=hp/((1-(7-min(aeg,reg))/6)*avgdmg_me(off,_str,ap,_def,res,arm))
+                #att=hp/((1-(7-min(aeg,reg))/6)*avgdmg_me(off,_str,ap,_def,res,arm))
+                hits=ptohit(off, _def)
+                wounds=hits*ptowound(_str, res)
+                unsavedwounds=wounds*n_ptoarm(ap, arm)
+                dmg=unsavedwounds*(1-(7-min(aeg,reg))/6)
+                att=hp/dmg
                 attpt=10*att/pt
                 lret.append([off,_str,ap,att,attpt])
     if test==True:
@@ -229,11 +240,17 @@ def missile(ran,att,aim,_str,ap,pt,mw=1,aa=1,acc=False,qtf=False,unw=False,mof=F
             for res in range(2,7):
                 for arm in range(0,7):
                     dmg=0
-                    if type(att)==list:
+                    if type(att)==list: # Multi-part model
                         for i in range(len(att)):
-                            dmg+=att[i]*mw[i]*aa[i]*avgdmg_mi(aim, _str[i], ap[i], res, arm)
+                            #dmg+=att[i]*mw[i]*aa[i]*avgdmg_mi(aim, _str[i], ap[i], res, arm)
+                            hits=att[i]*paim(aim)
+                            wounds=hits*aa[i]*ptowound(_str[i], res)
+                            dmg+=wounds*mw[i]*n_ptoarm(ap[i], arm)
                     else:
-                        dmg+=att*mw*aa*avgdmg_mi(aim, _str, ap, res, arm)
+                        #dmg+=att*mw*aa*avgdmg_mi(aim, _str, ap, res, arm)
+                        hits=att*paim(aim)
+                        wounds=hits*aa*ptowound(_str, res)
+                        dmg=wounds*mw*n_ptoarm(ap, arm)
                     dmgpt=avgdmgpt(100*dmg,pt)
                     l2.append([ran/(2-i),res,arm,dmg,dmgpt])
     if test==True:
@@ -247,7 +264,12 @@ def surv_mi(hp,res,arm,pt,aeg=7,reg=7,ht=0,test=False):
     for aim in range(0,6)[::-1]:
         for _str in range(2,7):
             for ap in range(0,7):
-                att=hp/((1-(7-min(aeg,reg))/6)*avgdmg_mi(aim+ht, _str, ap, res, arm))
+                #att=hp/((1-(7-min(aeg,reg))/6)*avgdmg_mi(aim+ht, _str, ap, res, arm))
+                hits=paim(aim+ht)
+                wounds=hits*ptowound(_str, res)
+                unsavedwounds=wounds*n_ptoarm(ap, arm)
+                dmg=unsavedwounds*(1-(7-min(aeg,reg))/6)
+                att=hp/dmg
                 attpt=10*att/pt
                 lret.append([aim,_str,ap,att,attpt])
     if test==True:
